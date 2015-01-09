@@ -8,7 +8,7 @@ exports.validateFields = function (fields, data) {
         if (checKField.length === 1
             && data.hasOwnProperty(checKField[0])
             && data[checKField[0]]
-            && data[checKField[0]].trim()) {
+            && data[checKField[0]]) {
             isValid = true;
         }
         else if (checKField.length > 1
@@ -16,7 +16,7 @@ exports.validateFields = function (fields, data) {
             var check_2 = data[checKField[0]];
             if (check_2.hasOwnProperty(checKField[1])
                 && check_2[checKField[1]]
-                && check_2[checKField[1]].trim()) {
+                && check_2[checKField[1]]) {
                 isValid = true;
             } else {
                 isValid = false;

@@ -24,7 +24,7 @@ exports.loginWithEmail = function (request, response) {
                     response.status(200).json({data: user});
                 }
                 else {
-                    response.status(404).json({error: {message: "Email e/o password errati!"}});
+                        response.status(404).json({error: {message: "Email e/o password errati!"}});
                 }
             });
     }
