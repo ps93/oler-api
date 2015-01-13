@@ -1,4 +1,6 @@
-var User = require('../models/usersModel'),
+var Async = require('async'),
+    User = require('../models/usersModel'),
+    _ = require('underscore'),
     HotelFavourites = require('../models/hotelFavourites'),
     Utils = require('../helpers/utils');
 
@@ -8,32 +10,97 @@ exports.insertAndUpdate = function (req, res) {
     var params = req.body;
 
     if (Utils.validateFields(fields, params)) {
-        var idUser = params.id_user;
-        var userHotelData = params.hotelFavourites;
+        Async.parallel([
+                // CHECK USER EXIST
+                function (callback) {
+                    User
+                        .findOne()
+                        .where('_id').equals(params.id_user)
+                        .select('email')
+                        .exec(function (error, data) {
+                            if (error) {
+                                return callback(error);
+                            }
+                            return callback(null, data);
+                        });
 
-        HotelFavourites
-            .findOne()
-            .where('id_user').equals(idUser)
-            .exec()
-            .then(
-            function (userData) {
-                if (userData) {
-                    var hotels = addHotel(userHotelData, userData.hotelFavourites);
-                    if (hotels.length > 0) {
-                        return addRemoveExistUserWithHotelFavourites(res, idUser, hotels);
+                },
+                // GET USER FAVOURITES
+                function (callback) {
+                    HotelFavourites
+                        .findOne()
+                        .where('id_user').equals(params.id_user)
+                        .exec(function (error, data) {
+                            if (error) {
+                                return callback(error);
+                            }
+                            return callback(null, data);
+                        });
+                },
+                // CHECK HOTEL EXIST
+                function (callback) {
+                    HotelFavourites
+                        .findOne()
+                        .where('id_user').equals(params.id_user)
+                        .where('hotelFavourites.hotel_code').equals(params.hotelFavourites.hotel_code)
+                        .select('hotelFavourites')
+                        .exec(function (error, data) {
+                            if (error) {
+                                return callback(error);
+                            }
+                            else {
+                                return callback(null, data);
+                            }
+                        });
+                }
+            ],
+            function (error, responses) {
+                if (error) {
+                    res.status(500).json({error: {message: error}});
+                }
+                // ADD USER HOTEL FAVOURITES
+                else if (responses[0] && responses[1]) {
+                    if (responses[2]) {
+                        res.status(401).json({error: {message: "hotel_is_present"}});
                     }
                     else {
-                        res.status(401).json({error: {message: 'hotel_is_present'}});
+                        var hotels = responses[1].hotelFavourites;
+                        hotels.push(params.hotelFavourites);
+
+                        HotelFavourites
+                            .findOneAndUpdate({hotelFavourites: hotels})
+                            .where('id_user').equals(params.id_user)
+                            .exec(function (error, data) {
+                                if (error) {
+                                    res.status(500).json({error: {message: error}});
+                                }
+                                else {
+                                    res.status(200).json({data: data});
+                                }
+                            });
                     }
                 }
-                else {
-                    return addNewUserWithHotelFavourites(res, idUser, userHotelData);
+                // CREATE USER HOTEL FAVOURITES
+                else if (responses[0] && responses[1] === null) {
+
+                    var userFavourites = new HotelFavourites({
+                        id_user: params.id_user,
+                        hotelFavourites: [params.hotelFavourites]
+                    });
+
+                    userFavourites.save(function (error, data) {
+                        if (error) {
+                            res.status(500).json({error: {message: error}});
+                        }
+                        else {
+                            res.status(201).json({data: data});
+                        }
+                    });
                 }
-            },
-            function (error) {
-                res.status(500).json({error: {message: error}});
-            }
-        );
+                else {
+                    res.status(404).json({error: {message: "user_not_found"}});
+                }
+            });
     }
     else {
         res.status(400).json({error: {message: "Bad request"}});
@@ -47,26 +114,54 @@ exports.remove = function (req, res) {
     if (Utils.validateFields(fields, params)) {
         var idUser = params.id_user;
         var hotelCode = params.hotel_code;
+        var hotels;
 
-        HotelFavourites
-            .findOne()
-            .where('id_user').equals(idUser)
-            .where('hotelFavourites.hotel_code').equals(hotelCode)
-            .exec()
-            .then(
-            function (userData) {
-                if (userData) {
-                    var hotels = removeHotel(hotelCode, userData.hotelFavourites);
-                    return addRemoveExistUserWithHotelFavourites(res, idUser, hotels);
+        Async.series([
+                // CHECK HOTEL EXIST
+                function (callback) {
+                    HotelFavourites
+                        .findOne()
+                        .where('id_user').equals(idUser)
+                        .where('hotelFavourites.hotel_code').equals(hotelCode)
+                        .exec(function (error, data) {
+                            if (error) {
+                                return callback(error);
+                            }
+                            if (data) {
+                                hotels = data.hotelFavourites;
+                                callback();
+                            }
+                            else {
+                                res.status(404).json({error: {message: "hotel_not_found"}});
+                            }
+                        });
+                },
+                // REMOVE HOTEL FAVOURITE
+                function (callback) {
+
+                    for (var i = 0; i < hotels.length; i++) {
+                        if (hotels[i].hotel_code == hotelCode) {
+                            hotels.splice(i, 1);
+                            break;
+                        }
+                    }
+
+                    HotelFavourites
+                        .findOneAndUpdate({hotelFavourites: hotels})
+                        .where('id_user').equals(idUser)
+                        .exec(function (error, data) {
+                            if (error) {
+                                return callback(error);
+                            }
+                            else {
+                                res.status(200).json({data: data});
+                            }
+                        });
                 }
-                else {
-                    res.status(404).json({error: {message: 'hotel_not_found'}});
-                }
-            },
+            ],
             function (error) {
                 res.status(500).json({error: {message: error}});
-            }
-        );
+            });
     }
     else {
         res.status(400).json({error: {message: "Bad request"}});
@@ -80,89 +175,17 @@ exports.hotelsFavouritesByUserId = function (req, res) {
         HotelFavourites
             .findOne()
             .where('id_user').equals(idUser)
-            .exec()
-            .then(
-            function (userData) {
-                if (userData && userData.hotelFavourites) {
-                    res.status(200).json({data: userData});
+            .exec(function (error, data) {
+                if (error) {
+                    res.status(500).json({error: {message: error}});
+                }
+                if (data && data.hotelFavourites) {
+                    res.status(200).json({data: data});
                 }
                 else {
                     res.status(404).json({error: {message: "nothing_hotel_favourites"}});
                 }
-            },
-            function (error) {
-                res.status(500).json({error: {message: error}});
-            }
-        );
+            });
     }
 };
-
-function addNewUserWithHotelFavourites(res, idUser, userHotelData) {
-    HotelFavourites
-        .create({
-            id_user: idUser,
-            hotelFavourites: [userHotelData]
-        })
-        .then(
-        function (userData) {
-            res.status(201).json({data: userData});
-        },
-        function (error) {
-            res.status(500).json({error: {message: error}});
-        });
-}
-
-function addRemoveExistUserWithHotelFavourites(res, idUser, hotels) {
-    HotelFavourites
-        .findOneAndUpdate({hotelFavourites: hotels})
-        .where('id_user').equals(idUser)
-        .exec()
-        .then(
-        function (hotelFavouritesUpdated) {
-            res.status(200).json({data: hotelFavouritesUpdated});
-        },
-        function (error) {
-            res.status(500).json({error: {message: error}});
-        }
-    );
-}
-
-function addHotel(userHotelData, hotels) {
-    var hotelFounded = false;
-
-    for (var hotel in hotels) {
-        if (hotels[hotel].hotel_code == userHotelData.hotel_code) {
-            hotelFounded = true;
-            break;
-        }
-    }
-    if (hotelFounded) {
-        return [];
-    }
-    else {
-        hotels.push(userHotelData);
-        return hotels;
-    }
-}
-
-function removeHotel(hotelCode, hotels) {
-    var hotelFounded = false;
-    var pos = undefined;
-
-    for (var i = 0; i < hotels.length; i++) {
-        if (hotels[i].hotel_code == hotelCode) {
-            hotelFounded = true;
-            pos = i;
-            break;
-        }
-    }
-
-    if (hotelFounded) {
-        hotels.splice(pos, 1);
-        return hotels;
-    }
-    else {
-        return [];
-    }
-}
 

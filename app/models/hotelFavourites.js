@@ -9,7 +9,8 @@ var hotelFavouritesSchema = new Schema({
     },
     hotelFavourites: [
         {
-            hotel_code: Number,
+            hotel_code: String,
+            place_id: String,
             name: String,
             street: String,
             city: String,
@@ -18,7 +19,7 @@ var hotelFavouritesSchema = new Schema({
     ],
     created_at: {
         type: Date,
-        default: Date.now()
+        default: new Date()
     },
     updated_at: Date
 });
