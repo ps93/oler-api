@@ -30,10 +30,10 @@ module.exports = function (router) {
         .get(user.getUserData);
 
     // SHARE APP
-    /*router.route('/share-app')
-        .post(shareApp.insertAndUpdate);*/
+    router.route('/share-app')
+        .post(shareApp.insertAndUpdate);
 
-    /*router.route('/send-email')
-     .post(functionalities.shareApp);*/
+    router.route('/send-email')
+        .post(shareApp.insertAndUpdate);
 
 };

@@ -179,7 +179,7 @@ exports.hotelsFavouritesByUserId = function (req, res) {
                 if (error) {
                     res.status(500).json({error: {message: error}});
                 }
-                if (data && data.hotelFavourites) {
+                if (data && data.hotelFavourites.length > 0) {
                     res.status(200).json({data: data});
                 }
                 else {
