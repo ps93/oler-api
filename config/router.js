@@ -20,7 +20,7 @@ module.exports = function (router) {
     // HOTEL FAVOURITES
     router.route('/hotel-favourites/:id_user')
         .get(hotelFavourites.hotelsFavouritesByUserId);
-    router.route('/hotel-favourites/:id_user/:hotel_code')
+    router.route('/hotel-favourites/:id_user/:google_key')
         .delete(hotelFavourites.remove);
     router.route('/hotel-favourites')
         .post(hotelFavourites.insertAndUpdate);
@@ -33,7 +33,6 @@ module.exports = function (router) {
     router.route('/share-app')
         .post(shareApp.insertAndUpdate);
 
-    router.route('/send-email')
-        .post(shareApp.insertAndUpdate);
+    // SHARE
 
 };

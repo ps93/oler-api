@@ -2,23 +2,19 @@ var db = require('mongoose'),
     Schema = db.Schema;
 
 var userSchema = new Schema({
-    login: {
-        id: {
-            type: String,
-            required: true
-        },
-        name: {
-            type: String,
-            required: true
+    access: [
+        {
+            code: String,
+            name: {type: String, enum: ['email', 'facebook', 'google'], required: true, trim: true},
+            token: {type: String, trim: true},
+            created_at: {type: Date, default: new Date()},
+            updated_at: Date
         }
-    },
+    ],
     email: {
         type: String,
         unique: true,
         required: true
-    },
-    token: {
-        type: String
     },
     password: String,
     firstname: {
@@ -36,7 +32,7 @@ var userSchema = new Schema({
     },
     created_at: {
         type: Date,
-        default: Date.now()
+        default: new Date()
     },
     updated_at: Date
 });

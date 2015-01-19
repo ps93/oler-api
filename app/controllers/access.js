@@ -1,6 +1,74 @@
 var MD5 = require('MD5'),
+    Async = require('async'),
+    _ = require('underscore'),
     User = require('../models/usersModel'),
     Utils = require('../helpers/utils');
+
+exports.registrationWithEmail = function (req, res) {
+
+    var fields = ['email', 'password', 'firstname', 'lastname', 'access.name'];
+    var params = req.body;
+
+    if (Utils.validateFields(fields, params)
+        && params.access
+        && params.access.name === 'email') {
+
+        params.password = MD5(params.password);
+        params.access = [params.access];
+
+        Async.series({
+                checkEmailExist: function (callback) {
+                    User
+                        .findOne()
+                        .where('email').equals(params.email)
+                        .select('email')
+                        .exec(function (error, data) {
+                            if (error) {
+                                return callback({status: 500, message: error});
+                            }
+                            else if (data !== null) {
+                                return callback({status: 401, message: "user_is_present"});
+                            }
+                            else {
+                                return callback();
+                            }
+                        });
+                },
+                callHotelnet: function (callback) {
+                    return callback();
+                },
+                insertUser: function (callback) {
+                    User(params)
+                        .save(function (error, data) {
+                            if (error) {
+                                return callback({status: 500, message: error});
+                            }
+                            else {
+                                return callback(null, {
+                                    _id: data._id,
+                                    firstname: data.firstname,
+                                    lastname: data.lastname,
+                                    email: data.email,
+                                    image: data.image,
+                                    points: data.points
+                                });
+                            }
+                        });
+                }
+            },
+            function (error, responses) {
+                if (error) {
+                    res.status(error.status).json({error: {message: error.message}});
+                }
+                else {
+                    res.status(201).json({data: responses.insertUser});
+                }
+            });
+    }
+    else {
+        res.status(400).json({error: {message: "Bad request"}});
+    }
+};
 
 exports.loginWithEmail = function (request, response) {
 
@@ -16,7 +84,7 @@ exports.loginWithEmail = function (request, response) {
             .findOne()
             .where('email').equals(params.email)
             .where('password').equals(params.password)
-            .select('email firstname lastname image points updated_at')
+            .select('firstname lastname email image points updated_at')
             .exec(function (error, user) {
                 if (error)
                     response.status(500).json({error: {message: error}});
@@ -24,44 +92,7 @@ exports.loginWithEmail = function (request, response) {
                     response.status(200).json({data: user});
                 }
                 else {
-                        response.status(404).json({error: {message: "Email e/o password errati!"}});
-                }
-            });
-    }
-    else {
-        response.status(400).json({error: {message: "Bad request"}});
-    }
-
-};
-
-exports.registrationWithEmail = function (request, response) {
-
-    var fields = ['login.id', 'login.name', 'password', 'firstname', 'lastname', 'email'];
-    var params = request.body;
-
-    if (Utils.validateFields(fields, params)
-        && params.login.id === '0'
-        && params.login.name === 'email') {
-
-        params.password = MD5(params.password);
-
-        User
-            .create(params)
-            .then(
-            function (user) {
-                return showUserCreated(response, user);
-            },
-            function (error) {
-                if (error.errors && error.errors['email'] && error.errors['email'].message === 'email_is_present') {
-                    response.status(200).json({
-                        error: {
-                            code: error.errors['email'].message,
-                            message: error.errors['email'].message
-                        }
-                    });
-                }
-                else {
-                    response.status(500).json({error: {message: error}});
+                    response.status(404).json({error: {message: "Email e/o password errati!"}});
                 }
             });
     }
@@ -70,34 +101,105 @@ exports.registrationWithEmail = function (request, response) {
     }
 };
 
-exports.accessWithSocial = function (request, response) {
+exports.accessWithSocial = function (req, res) {
 
-    var fields = ['login.id', 'login.name', 'email', 'firstname', 'lastname'];
-    var params = request.body;
+    var fields = ['email', 'firstname', 'lastname', 'access.code', 'access.name', 'access.token'];
+    var params = req.body;
 
     if (Utils.validateFields(fields, params)
         && !params.hasOwnProperty('password')
-        && (params.login.name === 'facebook'
-        || params.login.name === 'google')) {
+        && (params.access.name == 'facebook'
+        || params.access.name === 'google')) {
 
-        User
-            .create(params)
-            .then(
-            function (user) {
-                return showUserCreated(response, user);
-            }, function (error) {
-                if (error.errors && error.errors['email'] && error.errors['email'].message === 'email_is_present') {
-                    return updateUserAccount(params, response);
+        Async.parallel({
+                checkEmailExist: function (callback) {
+                    User
+                        .findOne()
+                        .where('email').equals(params.email)
+                        .select('email access')
+                        .exec(function (error, data) {
+                            if (error) {
+                                return callback({status: 500, message: error});
+                            }
+                            else {
+                                return callback(null, data);
+                            }
+                        });
+                },
+                checkUserAccessDirect: function (callback) {
+                    User
+                        .findOne()
+                        .where('email').equals(params.email)
+                        .where('access.name').equals(params.access.name)
+                        .select('access')
+                        .exec(function (error, data) {
+                            if (error) {
+                                return callback({status: 500, message: error});
+                            }
+                            callback(null, data);
+                        })
+                }
+            },
+            function (error, responses) {
+                if (error) {
+                    res.status(error.status).json({error: {message: error.message}});
+                }
+                else if (responses.checkEmailExist === null && responses.checkUserAccessDirect === null) {
+                    params.access = [params.access];
+                    User(params)
+                        .save(function (error, data) {
+                            if (error) {
+                                res.status(500).json({error: {message: error}});
+                            }
+                            else {
+                                res.status(201).json({
+                                    data: {
+                                        _id: data._id,
+                                        firstname: data.firstname,
+                                        lastname: data.lastname,
+                                        email: data.email,
+                                        image: data.image,
+                                        points: data.points
+                                    }
+                                });
+                            }
+                        });
                 }
                 else {
-                    response.status(500).json({error: {message: error}});
+                    var access = responses.checkEmailExist.access;
+                    var found = false;
+
+                    for (var a in access) {
+                        if (access[a].name === params.access.name) {
+                            access[a].updated_at = new Date();
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        access.push(params.access);
+                    }
+
+                    params.access = access;
+
+                    User
+                        .findOneAndUpdate(params)
+                        .where('email').equals(params.email)
+                        .exec(function (error, data) {
+                            if (error) {
+                                res.status(500).json({error: {message: error}});
+                            }
+                            else {
+                                res.status(200).json({data: data});
+                            }
+                        });
                 }
             });
     }
     else {
-        response.status(400).json({error: {message: "Bad request"}});
+        res.status(400).json({error: {message: "Bad request"}});
     }
-
 };
 
 exports.setPassword = function (request, response) {
@@ -151,21 +253,6 @@ function updateUserAccount(params, response) {
         },
         function (error) {
             response.status(500).json({error: {message: error}});
-        });
-}
-
-function showUserCreated(response, data) {
-    response
-        .status(201)
-        .json({
-            data: {
-                _id: data._id,
-                firstname: data.firstname,
-                lastname: data.lastname,
-                email: data.email,
-                image: data.image,
-                points: data.points
-            }
         });
 }
 
