@@ -38,8 +38,8 @@ exports.insertAndUpdate = function (req, res) {
                         .select('email')
                         .exec(function (error, data) {
                             if (error) return callback({status: 500, message: error});
-                            else if(data === null) return callback({status: 401, message: "hotel_is_presenet"});
-                            return callback(null, data);
+                            else if(data !== null) return callback({status: 401, message: "hotel_is_present"});
+                            else return callback(null, data);
                         });
                 },
 
