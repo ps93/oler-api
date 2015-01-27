@@ -1,4 +1,5 @@
-var MD5 = require('MD5'),
+var http = require('http'),
+    MD5 = require('MD5'),
     Async = require('async'),
     _ = require('underscore'),
     User = require('../models/usersModel'),
@@ -13,6 +14,7 @@ exports.registrationWithEmail = function (req, res) {
         && params.access
         && params.access.name === 'email') {
 
+        var passwordChiaro = params.password;
         params.password = MD5(params.password);
         params.access = [params.access];
 
@@ -34,9 +36,6 @@ exports.registrationWithEmail = function (req, res) {
                             }
                         });
                 },
-                callHotelnet: function (callback) {
-                    return callback();
-                },
                 insertUser: function (callback) {
                     User(params)
                         .save(function (error, data) {
@@ -44,14 +43,56 @@ exports.registrationWithEmail = function (req, res) {
                                 return callback({status: 500, message: error});
                             }
                             else {
-                                return callback(null, {
-                                    _id: data._id,
-                                    firstname: data.firstname,
-                                    lastname: data.lastname,
-                                    email: data.email,
-                                    image: data.image,
-                                    points: data.points
+                                var userForHotelNet = JSON.stringify({
+                                    "channel_code": "0202",
+                                    "id_user": data._id,
+                                    "username": data.email,
+                                    "email": data.email,
+                                    "password": passwordChiaro,
+                                    "name": data.firstname,
+                                    "surname": data.lastname,
+                                    "how_user_registered": "1"
                                 });
+
+                                var options = {
+                                    hostname: "apps.hotelnet.biz",
+                                    path: "/channelmanager/hotelnetservices/api/user_new",
+                                    port: 80,
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "Content-Length": userForHotelNet.length
+                                    }
+                                };
+
+                                var request = http.request(options, function (response) {
+                                    response.setEncoding('utf8');
+                                    response.on('data', function (chunk) {
+
+                                        var dataFromApi = JSON.parse(chunk);
+
+                                        if (dataFromApi.registration_confirmed) {
+                                            return callback(null, {
+                                                _id: data._id,
+                                                firstname: data.firstname,
+                                                lastname: data.lastname,
+                                                email: data.email,
+                                                image: data.image,
+                                                points: data.points
+                                            });
+                                        }
+                                        else {
+                                            deleteUserById(res, data._id);
+                                        }
+                                    });
+                                });
+
+                                request.on('error', function (e) {
+                                    deleteUserById(res, data._id);
+                                });
+
+                                request.write(userForHotelNet);
+                                request.end();
                             }
                         });
                 }
@@ -111,6 +152,8 @@ exports.accessWithSocial = function (req, res) {
         && (params.access.name == 'facebook'
         || params.access.name === 'google')) {
 
+        var socialAccessName = params.access.name;
+
         Async.parallel({
                 checkEmailExist: function (callback) {
                     User
@@ -152,16 +195,58 @@ exports.accessWithSocial = function (req, res) {
                                 res.status(500).json({error: {message: error}});
                             }
                             else {
-                                res.status(201).json({
-                                    data: {
-                                        _id: data._id,
-                                        firstname: data.firstname,
-                                        lastname: data.lastname,
-                                        email: data.email,
-                                        image: data.image,
-                                        points: data.points
-                                    }
+                                var userForHotelNet = JSON.stringify({
+                                    "channel_code": "0202",
+                                    "id_user": data._id,
+                                    "username": data.email,
+                                    "email": data.email,
+                                    "password": data.email,
+                                    "name": data.firstname,
+                                    "surname": data.lastname,
+                                    "how_user_registered": socialAccessName === 'facebook' ? "1" : "2"
                                 });
+
+                                var options = {
+                                    hostname: "apps.hotelnet.biz",
+                                    path: "/channelmanager/hotelnetservices/api/user_new",
+                                    port: 80,
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "Content-Length": userForHotelNet.length
+                                    }
+                                };
+
+                                var request = http.request(options, function (response) {
+                                    response.setEncoding('utf8');
+                                    response.on('data', function (chunk) {
+
+                                        var dataFromApi = JSON.parse(chunk);
+
+                                        if (dataFromApi.registration_confirmed) {
+                                            res.status(201).json({
+                                                data: {
+                                                    _id: data._id,
+                                                    firstname: data.firstname,
+                                                    lastname: data.lastname,
+                                                    email: data.email,
+                                                    image: data.image,
+                                                    points: data.points
+                                                }
+                                            });
+                                        }
+                                        else {
+                                            deleteUserById(res, data._id);
+                                        }
+                                    });
+                                });
+
+                                request.on('error', function (e) {
+                                    deleteUserById(res, data._id);
+                                });
+
+                                request.write(userForHotelNet);
+                                request.end();
                             }
                         });
                 }
@@ -186,6 +271,7 @@ exports.accessWithSocial = function (req, res) {
                     User
                         .findOneAndUpdate(params)
                         .where('email').equals(params.email)
+                        .select('firstname lastname email points image')
                         .exec(function (error, data) {
                             if (error) {
                                 res.status(500).json({error: {message: error}});
@@ -237,25 +323,6 @@ exports.setPassword = function (request, response) {
     }
 };
 
-function updateUserAccount(params, response) {
-    params.updated_at = new Date();
-
-    User
-        .findOneAndUpdate(params)
-        .where('email').equals(params.email)
-        .select('firstname lastname email image points updated_at')
-        .exec()
-        .then(
-        function (userModified) {
-            response
-                .status(200)
-                .json({data: userModified});
-        },
-        function (error) {
-            response.status(500).json({error: {message: error}});
-        });
-}
-
 function sendEmail(password, params, response) {
 
     var prepareEmail = {
@@ -273,6 +340,18 @@ function sendEmail(password, params, response) {
         }
         else {
             response.status(200).json({data: params.email});
+        }
+    });
+}
+
+function deleteUserById(res, id) {
+
+    User.findByIdAndRemove(id, function (removeErr) {
+        if (removeErr) {
+            res.status(500).json({error: {message: "user_not_deleted"}});
+        }
+        else {
+            res.status(500).json({error: {message: "user_deleted"}});
         }
     });
 }
