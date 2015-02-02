@@ -5,8 +5,8 @@ var userSchema = new Schema({
     access: [
         {
             code: String,
-            name: {type: String, enum: ['email', 'facebook', 'google'], required: true, trim: true},
-            token: {type: String, trim: true},
+            name: {type: String, enum: ['email', 'facebook', 'google'], required: true},
+            token: {type: String},
             created_at: {type: Date, default: new Date()},
             updated_at: Date
         }
