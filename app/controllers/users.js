@@ -1,6 +1,6 @@
 // LOAD MODEL
 // ==============================================
-var User = require('../models/usersModel'),
+var User = require('../models/User'),
     Utils = require('../helpers/utils');
 
 exports.getUserData = function (req, res) {

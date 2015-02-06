@@ -1,5 +1,5 @@
 var Async = require('async'),
-    User = require('../models/usersModel'),
+    User = require('../models/User'),
     _ = require('underscore'),
     HotelFavourites = require('../models/hotelFavourites'),
     HotelWorld = require('../models/HotelsWorldModel'),
