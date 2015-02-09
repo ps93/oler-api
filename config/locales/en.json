@@ -1,0 +1,9 @@
+{
+  "Welcome": "Welcome",
+  "A brand new app.": "A brand new app.",
+  "email_is_present": "This e-mail address has already registered an account with Oler",
+  "email_not_exist": "This e-mail don't exist",
+  "bad_request": "Validation error",
+  "invalid_auth": "Email and/or pawssword not matched",
+  "unauthorized_request":"Unauthorized request"
+}
