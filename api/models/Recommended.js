@@ -114,7 +114,7 @@ module.exports = {
 
   FriendsRecommended: function (res, idUser) {
     Recommended
-      .find({id_friend: idUser, sort: 'id_hotel'})
+      .find({id_friend: idUser})
       .populate('id_hotel')
       .populate('id_user')
       .exec(function (error, data) {
