@@ -31,10 +31,10 @@ module.exports = function (router) {
         .post(hotelFavourites.insertAndUpdate);
 
     // HOTEL RECOMMENDED
-    router.route('/hotel-recommended')
+    router.route('/recommended-hotel')
         .post(RecommendedHotelController.insertRecommendedHotel);
 
-    router.route('/hotel-recommended/:id_user')
+    router.route('/recommended-hotel/:id_user')
         .get(RecommendedHotelController.recommendedHotelsByUser);
 
     // USER PROFILE

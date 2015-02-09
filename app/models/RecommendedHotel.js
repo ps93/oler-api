@@ -84,12 +84,15 @@ var self = {
     RecommendedHotelsByUser: function (res, idUser) {
 
         var Recommendedhotel = self.Model();
+        var test = [];
+        var test2 = [];
 
         Async.series([
             /****************************************************************/
             /* 1.                                                           */
             /****************************************************************/
             function (callback) {
+
                 Recommendedhotel
                     .find()
                     .where('id_user').equals(idUser)
@@ -97,7 +100,6 @@ var self = {
                         if (error) return callback({status: 500, message: error});
                         else if (data.length > 0) {
 
-                            var test = [];
                             var found = false;
                             var pos;
                             for (var i = 0; i < data.length; i++) {
@@ -123,7 +125,8 @@ var self = {
                                     test.push({id_hotel: data[i].id_hotel, friends: [data[i].id_friend]});
                                 }
                             }
-                            res.status(200).json({data: data, test: test});
+                            /*res.status(200).json({data: data, test: test});*/
+                            return callback();
                         }
                         else
                             return callback({status: 404, message: 'user_not_found'});
@@ -133,7 +136,25 @@ var self = {
             /* 2.                                                           */
             /****************************************************************/
             function (callback) {
+                for (var i = 0; i < test.length; i++) {
 
+                    var idHotel = test[i].id_hotel;
+
+                    User
+                        .find()
+                        .where('_id').in(test[i].friends)
+                        .select('firstname lastname image')
+                        .exec(function (error, data) {
+                            if (error) return callback({status: 500, message: error});
+                            else {
+                                test2.push({id_hotel: idHotel, friends: data});
+                                if (i == (test.length)) return callback();
+                            }
+                        });
+                }
+            },
+            function (callback) {
+                res.status(200).json({data: test2});
             }
         ], function (error) {
             if (error) res.status(error.status).json({error: {message: error.message}});
