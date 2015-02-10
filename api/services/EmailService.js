@@ -33,14 +33,14 @@ module.exports = {
       from: 'Oler Srl<oler@gmail.com>',
       bcc: contacts,
       subject: "Condividi questa fantastica app",
-      html: "Condivi questa fantastica app"
+      html: "Condividi questa fantastica app"
     };
 
     var config = this.EmailConfiguration();
 
     config.sendMail(prepareEmail, function (error) {
       if (error) return res.serverError({message: error});
-      else return res.ok({data: 'L\app è stata condivisa con i contatti selezionati.'});
+      else return res.ok({data: 'L\'app è stata condivisa con i contatti selezionati.'});
     });
   }
 

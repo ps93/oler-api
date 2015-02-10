@@ -18,7 +18,9 @@ module.exports = {
    ***************************************************************************/
 
   models: {
-    connection: 'someMongodbServer'
-  }
+    connection: 'localDB'
+  },
+
+  port: 2222,
 
 };

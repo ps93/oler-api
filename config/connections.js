@@ -56,9 +56,19 @@ module.exports.connections = {
    * Run: npm install sails-mongo                                             *
    *                                                                          *
    ***************************************************************************/
-  someMongodbServer: {
+
+  olerDB: {
     adapter: 'sails-mongo',
     host: 'oler-api.gabrielmayta.it',
+    port: 27017,
+    user: '',
+    password: '',
+    database: 'oler_db'
+  },
+
+  localDB: {
+    adapter: 'sails-mongo',
+    host: 'localhost',
     port: 27017,
     user: '',
     password: '',

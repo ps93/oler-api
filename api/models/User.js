@@ -156,7 +156,12 @@ module.exports = {
             .update({id: checkUserEmail.id}, {image: params.image, token: params.token})
             .exec(function (error, userUpdated) {
               if (error) {
-                if (error.status === 400) return res.badRequest({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+                if (error.status === 400) return res.badRequest({
+                  'message': sails.__({
+                    phrase: 'bad_request',
+                    locale: 'it'
+                  })
+                });
                 else return res.serverError({'message': error});
               }
               else return res.ok({data: userUpdated});
@@ -173,7 +178,12 @@ module.exports = {
               image: params.image
             }).exec(function (error, userCreated) {
               if (error) {
-                if (error.status === 400) return res.badRequest({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+                if (error.status === 400) return res.badRequest({
+                  'message': sails.__({
+                    phrase: 'bad_request',
+                    locale: 'it'
+                  })
+                });
                 else return res.serverError({'message': error});
               }
               else {
@@ -205,6 +215,22 @@ module.exports = {
       .exec(function (error, data) {
         if (error) return res.serverError({message: error});
         else return res.forbidden({message: 'Si sono verificati dei problemi, riprovare di nuovo.'});
+      });
+  },
+
+  MyProfile: function (res, idUser) {
+
+    User
+      .findOne({id: idUser})
+      .exec(function (error, data) {
+        if (error) return res.serverError({message: error});
+        else if (data) {
+          delete  data.password;
+          delete  data.access;
+          delete data.token;
+          return res.ok({data: data});
+        }
+        else return res.notFound({message: 'L\'utente non è stato trovato'});
       });
   }
 

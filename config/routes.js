@@ -40,6 +40,9 @@ module.exports.routes = {
   'POST /api/v1/access/social': {controller: 'UserController', action: 'social'},
   'POST /api/v1/set-password': {controller: 'UserController', action: 'setPassword'},
 
+  // PROFILO
+  'GET /api/v1/user/:id_user': {controller: 'UserController', action: 'myProfile'},
+
   // CONDIVISIONE DELL'APP
   'POST /api/v1/shareapp': {controller: 'ShareappController', action: 'insert'},
 

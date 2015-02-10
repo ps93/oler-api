@@ -49,6 +49,13 @@ module.exports = {
     if (params && params.email) {
       User.SetPassword(res, params.email);
     }
+  },
+
+  myProfile: function (req, res) {
+    var params = req.params;
+    if (params.id_user) {
+      User.MyProfile(res, params.id_user);
+    }
   }
 
 };
