@@ -81,7 +81,7 @@ module.exports = {
           }
           return res.ok({data: dataToShow});
         }
-        else return res.notFound({message: 'Nessun hotel tra i preferiti.'});
+        else return res.ok({message: 'Nessun hotel tra i preferiti.'});
       });
   }
 

@@ -143,7 +143,7 @@ module.exports = {
           delete userData.token;
           return res.ok({data: userData});
         }
-        else return res.forbidden({'message': sails.__({phrase: 'invalid_auth', locale: 'it'})});
+        else return res.ok({'message': sails.__({phrase: 'invalid_auth', locale: 'it'})});
       });
   },
 

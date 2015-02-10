@@ -69,6 +69,7 @@ module.exports = {
               id: responses[0][i].id_friend.id,
               firstname: responses[0][i].id_friend.firstname,
               lastname: responses[0][i].id_friend.lastname,
+              email: responses[0][i].id_friend.email,
               image: responses[0][i].id_friend.image,
               canEarnCredits: responses[0][i].canEarnCredits,
               createdAt: responses[0][i].createdAt
@@ -79,7 +80,9 @@ module.exports = {
               id: responses[1][i].id_user.id,
               firstname: responses[1][i].id_user.firstname,
               lastname: responses[1][i].id_user.lastname,
+              email: responses[1][i].id_user.email,
               image: responses[1][i].id_user.image,
+              canEarnCredits: false,
               createdAt: responses[1][i].createdAt
             });
           }
