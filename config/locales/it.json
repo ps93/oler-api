@@ -5,5 +5,7 @@
   "email_not_exist": "L'email inserità non è presente",
   "bad_request": "Devi compilare tutti i campi",
   "invalid_auth": "L'email e/o la password non corrispondono.",
-  "unauthorized_request": "Non sei autorizzato a fare queste richieste."
+  "unauthorized_request": "Non sei autorizzato a fare queste richieste.",
+  "server_error":"Problemi interni, stiamo lavorando per risolvere il problema",
+  "add_hotel_favourites": "Hotel aggiunto ai preferiti"
 }

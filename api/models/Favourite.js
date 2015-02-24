@@ -10,7 +10,6 @@ module.exports = {
   tableName: 'favourites',
 
   attributes: {
-
     id_user: {
       model: 'user'
     },
@@ -19,36 +18,54 @@ module.exports = {
     }
   },
 
-  Insert: function (res, idUser, idHotel, name) {
+  Insert: function (res, idUser, idHotel, params) {
 
     async.series([
       function (callback) {
         Favourite
           .find({id_user: idUser, id_hotel: idHotel})
           .exec(function (error, data) {
-            if (error) return callback(error);
-            else if (data.length > 0) return res.forbidden({message: 'L\'hotel è già tra i tuoi preferiti'});
-            else return callback();
+            if (error) callback(error);
+            else if (data.length > 0) res.forbidden({message: 'L\'hotel è già tra i tuoi preferiti'});
+            else callback();
           });
       },
       function (callback) {
         Hotel
-          .findOrCreate({id: idHotel}, {id: idHotel, name: name})
+          .findOrCreate({id: idHotel}, {
+            id: idHotel,
+            middleware_code: params.middleware_code,
+            provider_code: params.provider_code,
+            name: params.name,
+            street_address: params.street_address,
+            city: params.city,
+            country: params.country,
+            postal_code: params.postal_code,
+            latitude: params.latitude,
+            longitude: params.longitude,
+            email: params.email,
+            phone: params.phone,
+            fax: params.fax,
+            image: params.image,
+            photos: params.photos,
+            website: params.website,
+            is_hotelnet: params.is_hotelnet
+          })
           .exec(function (error) {
-            if (error) return callback(error);
-            else return callback();
+            if (error) callback(error);
+            else callback();
           });
       },
       function (callback) {
         Favourite
           .create({id_user: idUser, id_hotel: idHotel})
           .exec(function (error, data) {
-            if (error) return callback(error);
-            else return res.ok({data: data});
+            if (error) callback(error);
+            else res.ok({data: sails.__({phrase: 'add_hotel_favourites', locale: 'it'})});
           });
       }
     ], function (error) {
-      if (error) return res.serverError({'message': error});
+      if (error) res.serverError({'message': error});
     });
 
   },
@@ -57,9 +74,9 @@ module.exports = {
     Favourite
       .destroy({id_user: idUser, id_hotel: idHotel})
       .exec(function (error, data) {
-        if (error) return callback(error);
+        if (error) callback(error);
         else if (data.length > 0) res.ok({data: 'L\'hotel è stato eliminato dai tuoi preferiti.'});
-        else return res.notFound({message: 'L\'hotel selezionato non è presente tra i preferiti'});
+        else res.notFound({message: 'L\'hotel selezionato non è presente tra i preferiti'});
       });
   },
 
@@ -68,20 +85,9 @@ module.exports = {
       .find({id_user: idUser})
       .populate('id_hotel')
       .exec(function (error, data) {
-        if (error) return callback(error);
-        else if (data.length > 0) {
-          var dataToShow = [];
-          for (var i = 0; i < data.length; i++) {
-            dataToShow.push({
-              id: data[i].id_hotel.id,
-              name: data[i].id_hotel.name,
-              image: data[i].id_hotel.image,
-              createdAt: data[i].createdAt
-            });
-          }
-          return res.ok({data: dataToShow});
-        }
-        else return res.ok({message: 'Nessun hotel tra i preferiti.'});
+        if (error) callback(error);
+        else if (data.length > 0) res.ok({data: _.sortBy(_.map(data, 'id_hotel'), 'name')});
+        else res.ok({message: 'Nessun hotel tra i preferiti.'});
       });
   }
 

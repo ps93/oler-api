@@ -36,7 +36,7 @@ module.exports.http = {
       //'session',
       //'myRequestLogger',
       'bodyParser',
-      //'handleBodyParserError',
+      'handleBodyParserError',
       //'compress',
       'methodOverride',
       //'poweredBy',

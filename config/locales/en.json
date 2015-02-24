@@ -5,5 +5,7 @@
   "email_not_exist": "This e-mail don't exist",
   "bad_request": "Validation error",
   "invalid_auth": "Email and/or pawssword not matched",
-  "unauthorized_request":"Unauthorized request"
+  "unauthorized_request": "Unauthorized request",
+  "server_error": "Internal server error",
+  "add_hotel_favourites": "Hotel add to favourites"
 }

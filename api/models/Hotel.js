@@ -16,24 +16,40 @@ module.exports = {
       primaryKey: true,
       required: true
     },
-    name: {
-      type: 'string',
+    middleware_code: 'string',
+    provider_code: 'string',
+    name: {type: 'string', required: true},
+    street_address: 'string',
+    city: 'string',
+    country: 'string',
+    postal_code: 'string',
+    latitude: 'string',
+    longitude: 'string',
+    email: 'string',
+    phone: 'string',
+    fax: 'string',
+    image: 'string',
+    photos: 'array',
+    website: 'string',
+    is_hotelnet: {
+      type: 'boolean',
       required: true
     }
   },
 
   Insert: function (res, params) {
-
     Hotel
-      .create(params)
-      .exec(function (error, data) {
-        if (error) {
-          if (error.status === 400) return res.badRequest({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
-          else return res.serverError({'message': error});
-        }
-        else return res.ok({'data': data});
+      .create(params).exec(function (error, data) {
+        if (error) res.status(500).json({'message': sails.__({phrase: 'server_error', locale: 'it'})});
+        else  res.ok({'data': data});
       });
+  },
 
+  HotelById: function (res, idHotel) {
+    Hotel.findOne({id: idHotel}).exec(function (error, data) {
+      if (error) res.status(500).json({'message': sails.__({phrase: 'server_error', locale: 'it'})});
+      else  res.ok({'data': data});
+    });
   }
 
 };

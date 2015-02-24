@@ -46,8 +46,8 @@ module.exports.routes = {
   // CONDIVISIONE DELL'APP
   'POST /api/v1/shareapp': {controller: 'ShareappController', action: 'insert'},
 
-  // TUTTI GLI HOTEL
-  /*'POST /api/v1/hotel': {controller: 'HotelController', action: 'insert'},*/
+  // HOTEL
+  'GET /api/v1/hotels/:id_hotel': {controller: 'HotelController', action: 'hotelById'},
 
   // AMICI
   'GET /api/v1/friends/:id_user': {controller: 'FriendController', action: 'myFriends'},

@@ -50,7 +50,7 @@ module.exports = {
           });
       },
       /****************************************************************/
-      /* 2. INSERIMENTO DEL HOTEL CONSIGLIATO                         */
+      /* 2.  INSERIMENTO DEL HOTEL CONSIGLIATO                         */
       /****************************************************************/
       function (callback) {
         if (prepareInsertDocs.length > 0) {
