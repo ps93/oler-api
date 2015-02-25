@@ -26,7 +26,7 @@ module.exports = {
           .find({id_user: idUser, id_hotel: idHotel})
           .exec(function (error, data) {
             if (error) callback(error);
-            else if (data.length > 0) res.forbidden({message: 'L\'hotel è già tra i tuoi preferiti'});
+            else if (data.length > 0) res.status(401).json({message: 'L\'hotel è già tra i tuoi preferiti'});
             else callback();
           });
       },
@@ -76,7 +76,7 @@ module.exports = {
       .exec(function (error, data) {
         if (error) callback(error);
         else if (data.length > 0) res.ok({data: 'L\'hotel è stato eliminato dai tuoi preferiti.'});
-        else res.notFound({message: 'L\'hotel selezionato non è presente tra i preferiti'});
+        else res.status(404).json({message: 'L\'hotel selezionato non è presente tra i preferiti'});
       });
   },
 
