@@ -35,7 +35,7 @@ module.exports = {
         Recommended
           .find({id_user: idUser, id_hotel: idHotel, id_friend: friends})
           .exec(function (error, data) {
-            if (error) return callback(error);
+            if (error) callback(error);
             else {
               for (var i = 0; i < friends.length; i++) {
                 if (data.length > 0) {
@@ -45,7 +45,7 @@ module.exports = {
                 }
                 else prepareInsertDocs.push({id_user: idUser, id_hotel: idHotel, id_friend: friends[i]});
               }
-              return callback();
+              callback();
             }
           });
       },
@@ -57,14 +57,14 @@ module.exports = {
           Recommended
             .create(prepareInsertDocs)
             .exec(function (error) {
-              if (error) return res.serverError({'message': error});
-              else return res.ok({'data': 'L\'hotel è stato condiviso con i tuoi amici'});
+              if (error) res.serverError({'message': error});
+              else res.ok({'data': 'L\'hotel è stato condiviso con i tuoi amici'});
             });
         }
-        else return res.forbidden({'message': 'L\'hotel è già stato consigliato con questi amici'});
+        else res.status(401).json({'message': 'L\'hotel è già stato consigliato con questi amici'});
       }
     ], function (error) {
-      if (error) return res.serverError({message: error});
+      if (error) res.serverError({message: error});
     });
   },
 
@@ -74,7 +74,7 @@ module.exports = {
       .populate('id_hotel')
       .populate('id_friend')
       .exec(function (error, data) {
-        if (error) return res.serverError({message: error});
+        if (error) res.serverError({message: error});
         else {
           var dataToShow = [];
           var hotel_found = false;
@@ -107,7 +107,7 @@ module.exports = {
               });
             }
           }
-          return res.ok({data: data});
+          res.ok({data: data});
         }
       });
   },
@@ -118,7 +118,7 @@ module.exports = {
       .populate('id_hotel')
       .populate('id_user')
       .exec(function (error, data) {
-        if (error) return res.serverError({'message': error});
+        if (error) res.serverError({'message': error});
         else {
           var dataToShow = [];
           var hotel_found = false;
@@ -151,7 +151,7 @@ module.exports = {
               });
             }
           }
-          return res.ok({data: dataToShow});
+          res.ok({data: dataToShow});
         }
       });
   }

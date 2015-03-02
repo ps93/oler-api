@@ -13,9 +13,7 @@ module.exports = {
     if (params.id_user && params.id_hotel && params.friends && params.friends.length > 0) {
       Recommended.Insert(res, params.id_user, params.id_hotel, params.friends);
     }
-    else {
-      return res.badRequest({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
-    }
+    else res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   },
 
   userRecommended: function (req, res) {
@@ -24,9 +22,7 @@ module.exports = {
     if (params.id_user) {
       Recommended.UserRecommended(res, params.id_user);
     }
-    else {
-      return res.badRequest({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
-    }
+    else res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   },
 
   friendsRecommended: function (req, res) {
@@ -35,9 +31,7 @@ module.exports = {
     if (params.id_user) {
       Recommended.FriendsRecommended(res, params.id_user);
     }
-    else {
-      return res.badRequest({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
-    }
+    else res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   }
 
 };

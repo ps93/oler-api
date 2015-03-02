@@ -12,10 +12,7 @@ module.exports = {
     if (params.id_user && params.contacts && params.contacts.length > 0) {
       Shareapp.Insert(res, params.id_user, params.contacts);
     }
-    else {
-      return res.badRequest({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
-    }
-
+    else res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   }
 
 };

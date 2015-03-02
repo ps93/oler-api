@@ -40,8 +40,14 @@ module.exports = {
       type: 'string',
       required: true
     },
-    image: 'string'
-
+    image: 'string',
+    toJSON: function () {
+      var obj = this.toObject();
+      delete obj.password;
+      delete obj.access;
+      delete obj.token;
+      return obj;
+    }
   },
 
   RegistrationWithEmail: function (res, params) {
@@ -57,9 +63,9 @@ module.exports = {
         User
           .findOne({email: params.email})
           .exec(function (error, data) {
-            if (error) return callback(error);
-            else if (data) return res.forbidden({message: sails.__({phrase: 'email_is_present', locale: 'it'})});
-            else return callback();
+            if (error) callback(error);
+            else if (data) res.status(401).json({message: sails.__({phrase: 'email_is_present', locale: 'it'})});
+            else callback();
           });
       },
       /****************************************************************/
@@ -79,10 +85,10 @@ module.exports = {
             token: params.token
           })
           .exec(function (error, data) {
-            if (error) return callback(error);
+            if (error) callback(error);
             else {
               userRegistered = data;
-              return callback();
+              callback();
             }
           });
       },
@@ -90,16 +96,15 @@ module.exports = {
       /* 3. REGISTRAZIONE UTENTE NEL DATABASE DI HOTELNET             */
       /****************************************************************/
       function (callback) {
-
-        return callback();
-        /*  var requestPrepared = HotelnetService.HotelnetRegistrationPrepare('1', userRegistered, passwordChiaro);
+        callback();
+        /* var requestPrepared = HotelnetService.HotelnetRegistrationPrepare('1', userRegistered, passwordChiaro);
          var options = HotelnetService.HotelnetRegistrationOptions(requestPrepared);
 
          var request = http.request(options, function (response) {
          response.setEncoding('utf8');
          response.on('data', function (chunk) {
          var dataFromApi = JSON.parse(chunk);
-         if (dataFromApi.registration_confirmed) return callback();
+         if (dataFromApi.registration_confirmed) callback();
          else User.Remove(res, userRegistered.id);
          });
          });
@@ -129,42 +134,31 @@ module.exports = {
 
       }
     ], function (error) {
-      if (error) return res.serverError({'message': error});
+      if (error) res.serverError({'message': error});
     });
   },
 
   LoginWithEmail: function (res, email, password) {
     User
       .findOne({email: email, password: MD5(password)})
-      .then(function (userData) {
-        if (userData) {
-          delete  userData.password;
-          delete  userData.access;
-          delete userData.token;
-          return res.ok({data: userData});
-        }
-        else return res.ok({'message': sails.__({phrase: 'invalid_auth', locale: 'it'})});
+      .exec(function (error, data) {
+        if (error) res.serverError({message: error});
+        else if (data)res.ok({data: data});
+        else res.ok({'message': sails.__({phrase: 'invalid_auth', locale: 'it'})});
       });
   },
 
   LoginOrRegistrationWithSocial: function (res, params) {
     User
       .findOne({email: params.email})
-      .then(function (checkUserEmail) {
-        if (checkUserEmail) {
+      .exec(function (error, checkUserEmail) {
+        if (error) res.serverError({data: error});
+        else if (checkUserEmail) {
           User
             .update({id: checkUserEmail.id}, {image: params.image, token: params.token})
             .exec(function (error, userUpdated) {
-              if (error) {
-                if (error.status === 400) return res.badRequest({
-                  'message': sails.__({
-                    phrase: 'bad_request',
-                    locale: 'it'
-                  })
-                });
-                else return res.serverError({'message': error});
-              }
-              else return res.ok({data: userUpdated});
+              if (error) res.serverError({'message': error});
+              else res.ok({data: userUpdated});
             });
         }
         else {
@@ -177,20 +171,12 @@ module.exports = {
               token: params.token,
               image: params.image
             }).exec(function (error, userCreated) {
-              if (error) {
-                if (error.status === 400) return res.badRequest({
-                  'message': sails.__({
-                    phrase: 'bad_request',
-                    locale: 'it'
-                  })
-                });
-                else return res.serverError({'message': error});
-              }
+              if (error) res.serverError({'message': error});
               else {
                 delete userCreated.password;
                 delete userCreated.token;
                 delete userCreated.access;
-                return res.ok({'data': userCreated});
+                res.ok({'data': userCreated});
               }
             });
         }
@@ -200,21 +186,19 @@ module.exports = {
   SetPassword: function (res, email) {
     User
       .update({email: email}, {password: MD5('passwordoler')})
-      .then(function (passwordUpdated) {
-        if (passwordUpdated.length > 0) EmailService.SendEmailSetPassword(res, 'passwordoler', email);
-        else return res.notFound({'message': sails.__({phrase: 'email_not_exist', locale: 'it'})})
+      .exec(function (error, passwordUpdated) {
+        if (error) res.serverError({message: error});
+        else if (passwordUpdated.length > 0) EmailService.SendEmailSetPassword(res, 'passwordoler', email);
+        else res.status(404).json({'message': sails.__({phrase: 'email_not_exist', locale: 'it'})});
       })
-      .error(function (error) {
-        return res.serverError({data: error});
-      });
   },
 
   Remove: function (res, idUser) {
     User
       .destroy({id: idUser})
       .exec(function (error, data) {
-        if (error) return res.serverError({message: error});
-        else return res.forbidden({message: 'Si sono verificati dei problemi, riprovare di nuovo.'});
+        if (error) res.serverError({message: error});
+        else res.status(401).json({message: 'Si sono verificati dei problemi, riprovare di nuovo.'});
       });
   },
 
@@ -223,14 +207,9 @@ module.exports = {
     User
       .findOne({id: idUser})
       .exec(function (error, data) {
-        if (error) return res.serverError({message: error});
-        else if (data) {
-          delete  data.password;
-          delete  data.access;
-          delete data.token;
-          return res.ok({data: data});
-        }
-        else return res.notFound({message: 'L\'utente non è stato trovato'});
+        if (error) res.serverError({message: error});
+        else if (data) res.ok({data: data});
+        else res.status(404).json({message: 'L\'utente non è stato trovato'});
       });
   }
 
