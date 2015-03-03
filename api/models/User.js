@@ -96,25 +96,24 @@ module.exports = {
       /* 3. REGISTRAZIONE UTENTE NEL DATABASE DI HOTELNET             */
       /****************************************************************/
       function (callback) {
-        callback();
-        /* var requestPrepared = HotelnetService.HotelnetRegistrationPrepare('1', userRegistered, passwordChiaro);
-         var options = HotelnetService.HotelnetRegistrationOptions(requestPrepared);
+        var requestPrepared = HotelnetService.HotelnetRegistrationPrepare('1', userRegistered, passwordChiaro);
+        var options = HotelnetService.HotelnetRegistrationOptions(requestPrepared);
 
-         var request = http.request(options, function (response) {
-         response.setEncoding('utf8');
-         response.on('data', function (chunk) {
-         var dataFromApi = JSON.parse(chunk);
-         if (dataFromApi.registration_confirmed) callback();
-         else User.Remove(res, userRegistered.id);
-         });
-         });
+        var request = http.request(options, function (response) {
+          response.setEncoding('utf8');
+          response.on('data', function (chunk) {
+            var dataFromApi = JSON.parse(chunk);
+            if (dataFromApi.registration_confirmed) callback();
+            else User.Remove(res, userRegistered.id);
+          });
+        });
 
-         request.on('error', function (e) {
-         User.Remove(res, userRegistered.id);
-         });
+        request.on('error', function (e) {
+          User.Remove(res, userRegistered.id);
+        });
 
-         request.write(requestPrepared);
-         request.end();*/
+        request.write(requestPrepared);
+        request.end();
       },
       /****************************************************************/
       /* 4. CONTROLLA SE SONO PRESENTI PERSONE CHE ABBIANO            */
@@ -131,7 +130,6 @@ module.exports = {
             else if (data.length > 0) Friend.InsertFriendsOnUserRegistration(res, userRegistered, data);
             else return res.ok({data: userRegistered});
           });
-
       }
     ], function (error) {
       if (error) res.serverError({'message': error});
