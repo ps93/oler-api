@@ -96,11 +96,13 @@ module.exports = {
       /* 3. REGISTRAZIONE UTENTE NEL DATABASE DI HOTELNET             */
       /****************************************************************/
       function (callback) {
-        var requestPrepared = HotelnetService.HotelnetRegistrationPrepare('1', userRegistered, passwordChiaro);
+        callback();
+        /*var requestPrepared = HotelnetService.HotelnetRegistrationPrepare('1', userRegistered, passwordChiaro);
         var options = HotelnetService.HotelnetRegistrationOptions(requestPrepared);
 
         var request = https.request(options, function (response) {
           response.setEncoding('utf8');
+
           response.on('data', function (chunk) {
             var dataFromApi = JSON.parse(chunk);
             if (dataFromApi.registration_confirmed) callback();
@@ -113,7 +115,7 @@ module.exports = {
         });
 
         request.write(requestPrepared);
-        request.end();
+        request.end();*/
       },
       /****************************************************************/
       /* 4. CONTROLLA SE SONO PRESENTI PERSONE CHE ABBIANO            */
