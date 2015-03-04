@@ -16,8 +16,8 @@ module.exports = {
 
   HotelnetRegistrationOptions: function (requestPrepared) {
     return {
-      hostname: 'apps.hotelnet.biz',
-      path: '/channelmanager/hotelnetservices/api/user_new',
+      hostname: 'https://webservice.hotelnet.biz',
+      path: '/ws/Hotelnet.Services/api/user_new',
       port: 80,
       method: 'POST',
       headers: {
