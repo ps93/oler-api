@@ -6,7 +6,7 @@
  */
 
 var MD5 = require('MD5'),
-  http = require('http');
+  https = require('https');
 
 module.exports = {
 
@@ -99,7 +99,7 @@ module.exports = {
         var requestPrepared = HotelnetService.HotelnetRegistrationPrepare('1', userRegistered, passwordChiaro);
         var options = HotelnetService.HotelnetRegistrationOptions(requestPrepared);
 
-        var request = http.request(options, function (response) {
+        var request = https.request(options, function (response) {
           response.setEncoding('utf8');
           response.on('data', function (chunk) {
             var dataFromApi = JSON.parse(chunk);
