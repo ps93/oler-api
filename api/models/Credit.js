@@ -30,23 +30,51 @@ module.exports = {
 
   InsertCredit: function (res, idUser, idHotel, idReservation) {
 
-    var prepareParams = {
+ /*   var prepareParams = {
       id_hotel: idHotel,
       id_reservation: idReservation
-    };
+    };*/
+
+    var prepareParams = {};
+
+    var friend_levels = [];
 
     async.series([
-      // CONTROLLA SE ESISTE UN UTENTE CHE DOVREBBE GUADAGNARE
-      // SU QUESTA PRENOTAZIONE
+      // CONTROLLA AMICO LIVELLO 1
       function (callback) {
+        /*Friend
+         .findOne({id_friend: idUser, can_earn_credits: true})
+         .populate('id_user')
+         .exec(function (error, data) {
+         if (error) callback(error);
+         else if (data) {
+         prepareParams.id_user = data.id_user.id;
+         prepareParams.id_friend = idUser;
+         callback();
+         }
+         else res.ok({data: 'Nessun credito da asegnare'});
+         });*/
         Friend
-          .findOne({id_friend: idUser, canEarnCredits: true})
+          .findOne({id_friend: idUser, can_earn_credits: true})
           .populate('id_user')
           .exec(function (error, data) {
             if (error) callback(error);
             else if (data) {
-              prepareParams.id_user = data.id_user.id;
-              prepareParams.id_friend = idUser;
+              friend_levels.push(data.id_user.id);
+              callback();
+            }
+            else res.ok({data: 'Nessun credito da asegnare'});
+          });
+      },
+      //CONTROLLA AMICO LIVELLO 2
+      function (callback) {
+        Friend
+          .findOne({id_friend: friend_levels[0], can_earn_credits: true})
+          .populate('id_user')
+          .exec(function (error, data) {
+            if (error) callback(error);
+            else if (data) {
+              friend_levels.push(data.id_user.id);
               callback();
             }
             else res.ok({data: 'Nessun credito da asegnare'});
@@ -55,10 +83,14 @@ module.exports = {
       // SE TROVA UN UTENTE CHE PUO GUADAGNARE SU QUESTA PRENOTAZIONE
       // SALVA I DATI NELLA TABELLA CREDITS
       function (callback) {
-        Credit.findOrCreate(prepareParams, prepareParams).exec(function (error, data) {
-          if (error) callback(error);
-          else res.ok({data: data});
-        });
+
+        res.ok({data: friend_levels});
+
+
+        /* Credit.findOrCreate(prepareParams, prepareParams).exec(function (error, data) {
+         if (error) callback(error);
+         else res.ok({data: data});
+         });*/
       }
     ], function (error) {
       if (error) res.serverError({'message': error});
