@@ -25,72 +25,93 @@ module.exports = {
     id_reservation: {
       type: 'string',
       required: true
+    },
+    level: {
+      type: 'integer',
+      required: true
     }
   },
 
   InsertCredit: function (res, idUser, idHotel, idReservation) {
 
- /*   var prepareParams = {
-      id_hotel: idHotel,
-      id_reservation: idReservation
-    };*/
-
-    var prepareParams = {};
-
-    var friend_levels = [];
+    var prepareParams = [];
+    var _1LevelFound = false;
+    var _2LevelFound = false;
 
     async.series([
       // CONTROLLA AMICO LIVELLO 1
       function (callback) {
-        /*Friend
-         .findOne({id_friend: idUser, can_earn_credits: true})
-         .populate('id_user')
-         .exec(function (error, data) {
-         if (error) callback(error);
-         else if (data) {
-         prepareParams.id_user = data.id_user.id;
-         prepareParams.id_friend = idUser;
-         callback();
-         }
-         else res.ok({data: 'Nessun credito da asegnare'});
-         });*/
         Friend
           .findOne({id_friend: idUser, can_earn_credits: true})
           .populate('id_user')
           .exec(function (error, data) {
             if (error) callback(error);
             else if (data) {
-              friend_levels.push(data.id_user.id);
+              prepareParams.push({
+                id_user: data.id_user.id,
+                id_friend: idUser,
+                level: 1,
+                id_hotel: idHotel,
+                id_reservation: idReservation
+              });
               callback();
             }
-            else res.ok({data: 'Nessun credito da asegnare'});
+            else res.ok({message: 'Nessun credito disponibile su questa prenotazione'});
           });
       },
+
       //CONTROLLA AMICO LIVELLO 2
       function (callback) {
         Friend
-          .findOne({id_friend: friend_levels[0], can_earn_credits: true})
+          .findOne({id_friend: prepareParams[0].id_user, can_earn_credits: true})
           .populate('id_user')
           .exec(function (error, data) {
             if (error) callback(error);
             else if (data) {
-              friend_levels.push(data.id_user.id);
+              prepareParams.push({
+                id_user: data.id_user.id,
+                id_friend: idUser,
+                level: 2,
+                id_hotel: idHotel,
+                id_reservation: idReservation
+              });
               callback();
             }
-            else res.ok({data: 'Nessun credito da asegnare'});
+            else callback();
           });
       },
-      // SE TROVA UN UTENTE CHE PUO GUADAGNARE SU QUESTA PRENOTAZIONE
+
+      // SE TROVA UN UTENTE DI LIVELLO 1 CHE PUO' GUADAGNARE SU QUESTA PRENOTAZIONE
       // SALVA I DATI NELLA TABELLA CREDITS
       function (callback) {
+        Credit
+          .findOrCreate({
+            id_user: prepareParams[0].id_user,
+            id_friend: prepareParams[0].id_friend,
+            id_hotel: prepareParams[0].id_hotel,
+            id_reservation: idReservation
+          }, prepareParams)
+          .exec(function (error, data) {
+            if (error) callback(error);
+            else if (prepareParams.length > 1) callback();
+            else res.ok({message: 'Registrato utente che ha guadagnato i punti.'});
+          });
+      },
 
-        res.ok({data: friend_levels});
-
-
-        /* Credit.findOrCreate(prepareParams, prepareParams).exec(function (error, data) {
-         if (error) callback(error);
-         else res.ok({data: data});
-         });*/
+      // SE TROVA UN UTENTE DI LIVELLO 2 CHE PUO' GUADAGNARE SU QUESTA PRENOTAZIONE
+      // SALVA I DATI NELLA TABELLA CREDITS
+      function (callback) {
+        Credit
+          .findOrCreate({
+            id_user: prepareParams[0].id_user,
+            id_friend: prepareParams[0].id_friend,
+            id_hotel: prepareParams[0].id_hotel,
+            id_reservation: idReservation
+          }, prepareParams)
+          .exec(function (error, data) {
+            if (error) callback(error);
+            else res.ok({message: 'Registrato gli utenti che hanno guadagnato i punti.'});
+          });
       }
     ], function (error) {
       if (error) res.serverError({'message': error});
@@ -111,6 +132,7 @@ module.exports = {
             dataToShow.push({
               id_reservation: data[i].id_reservation,
               booking_date: data[i].createdAt,
+              level: data[i].level,
               friend: data[i].id_friend,
               hotel: data[i].id_hotel
             });
