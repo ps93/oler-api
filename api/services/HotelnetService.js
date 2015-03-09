@@ -18,7 +18,7 @@ module.exports = {
     return {
       hostname: 'webservice.hotelnet.biz',
       path: '/ws/Hotelnet.Services/api/user_new',
-      port: 80,
+      port: 443,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -96,8 +96,7 @@ module.exports = {
       /* 3. REGISTRAZIONE UTENTE NEL DATABASE DI HOTELNET             */
       /****************************************************************/
       function (callback) {
-        callback();
-        /*var requestPrepared = HotelnetService.HotelnetRegistrationPrepare('1', userRegistered, passwordChiaro);
+        var requestPrepared = HotelnetService.HotelnetRegistrationPrepare('1', userRegistered, passwordChiaro);
         var options = HotelnetService.HotelnetRegistrationOptions(requestPrepared);
 
         var request = https.request(options, function (response) {
@@ -115,7 +114,7 @@ module.exports = {
         });
 
         request.write(requestPrepared);
-        request.end();*/
+        request.end();
       },
       /****************************************************************/
       /* 4. CONTROLLA SE SONO PRESENTI PERSONE CHE ABBIANO            */
