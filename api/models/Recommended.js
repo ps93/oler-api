@@ -107,7 +107,7 @@ module.exports = {
               });
             }
           }
-          res.ok({data: data});
+          res.ok({data: dataToShow});
         }
       });
   },
