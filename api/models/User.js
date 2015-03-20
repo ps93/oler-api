@@ -63,9 +63,9 @@ module.exports = {
         User
           .findOne({email: params.email})
           .exec(function (error, data) {
-            if (error) callback(error);
-            else if (data) res.status(401).json({message: sails.__({phrase: 'email_is_present', locale: 'it'})});
-            else callback();
+            if (error) return callback(error);
+            else if (data) return res.status(401).json({message: sails.__({phrase: 'email_is_present', locale: 'it'})});
+            else return callback();
           });
       },
       /****************************************************************/
@@ -88,7 +88,7 @@ module.exports = {
             if (error) callback(error);
             else {
               userRegistered = data;
-              callback();
+              return callback();
             }
           });
       },
@@ -104,7 +104,7 @@ module.exports = {
 
           response.on('data', function (chunk) {
             var dataFromApi = JSON.parse(chunk);
-            if (dataFromApi.registration_confirmed) callback();
+            if (dataFromApi.registration_confirmed) return callback();
             else User.Remove(res, userRegistered.id);
           });
         });
@@ -141,9 +141,9 @@ module.exports = {
     User
       .findOne({email: email, password: MD5(password)})
       .exec(function (error, data) {
-        if (error) res.serverError({message: error});
-        else if (data)res.ok({data: data});
-        else res.ok({'message': sails.__({phrase: 'invalid_auth', locale: 'it'})});
+        if (error) return res.serverError({message: error});
+        else if (data) return res.ok({data: data});
+        else return res.ok({'message': sails.__({phrase: 'invalid_auth', locale: 'it'})});
       });
   },
 
@@ -151,13 +151,13 @@ module.exports = {
     User
       .findOne({email: params.email})
       .exec(function (error, checkUserEmail) {
-        if (error) res.serverError({data: error});
+        if (error) return res.serverError({data: error});
         else if (checkUserEmail) {
           User
             .update({id: checkUserEmail.id}, {image: params.image, token: params.token})
             .exec(function (error, userUpdated) {
-              if (error) res.serverError({'message': error});
-              else res.ok({data: userUpdated});
+              if (error) return res.serverError({'message': error});
+              else return res.ok({data: userUpdated});
             });
         }
         else {
@@ -170,12 +170,12 @@ module.exports = {
               token: params.token,
               image: params.image
             }).exec(function (error, userCreated) {
-              if (error) res.serverError({'message': error});
+              if (error) return res.serverError({'message': error});
               else {
                 delete userCreated.password;
                 delete userCreated.token;
                 delete userCreated.access;
-                res.ok({'data': userCreated});
+                return res.ok({'data': userCreated});
               }
             });
         }
@@ -186,19 +186,10 @@ module.exports = {
     User
       .update({email: email}, {password: MD5('passwordoler')})
       .exec(function (error, passwordUpdated) {
-        if (error) res.serverError({message: error});
+        if (error) return res.serverError({message: error});
         else if (passwordUpdated.length > 0) EmailService.SendEmailSetPassword(res, 'passwordoler', email);
-        else res.status(404).json({'message': sails.__({phrase: 'email_not_exist', locale: 'it'})});
+        else return res.status(404).json({'message': sails.__({phrase: 'email_not_exist', locale: 'it'})});
       })
-  },
-
-  Remove: function (res, idUser) {
-    User
-      .destroy({id: idUser})
-      .exec(function (error, data) {
-        if (error) res.serverError({message: error});
-        else res.status(401).json({message: 'Si sono verificati dei problemi, riprovare di nuovo.'});
-      });
   },
 
   MyProfile: function (res, idUser) {
@@ -206,9 +197,9 @@ module.exports = {
     User
       .findOne({id: idUser})
       .exec(function (error, data) {
-        if (error) res.serverError({message: error});
-        else if (data) res.ok({data: data});
-        else res.status(404).json({message: 'L\'utente non è stato trovato'});
+        if (error) return res.serverError({message: error});
+        else if (data) return res.ok({data: data});
+        else return res.status(404).json({message: 'L\'utente non è stato trovato'});
       });
   }
 
