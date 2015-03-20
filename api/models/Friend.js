@@ -65,12 +65,12 @@ module.exports = {
               for (var i = 0; i < data.length; i++) {
                 if (data[i].id_user.id !== idUser) {
                   data[i].id_user.cash = false;
-                  data[i].id_user.pending = data[i].are_friends;
+                  data[i].id_user.pending = !data[i].are_friends;
                   friends.push(data[i].id_user);
                 }
                 if (data[i].id_friend.id !== idUser) {
                   data[i].id_friend.cash = data[i].can_earn_credits;
-                  data[i].id_friend.pending = data[i].are_friends;
+                  data[i].id_friend.pending = !data[i].are_friends;
                   friends.push(data[i].id_friend);
                 }
               }
