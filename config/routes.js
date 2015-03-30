@@ -70,8 +70,8 @@ module.exports.routes = {
   'DELETE /api/v1/favourites/:id_user/:id_hotel': {controller: 'FavouriteController', action: 'remove'},
 
   // HOTEL CONSIGLIATI
-  'GET /api/v1/recommended-user/:id_user': {controller: 'RecommendedController', action: 'userRecommended'},
   'GET /api/v1/recommended-friends/:id_user': {controller: 'RecommendedController', action: 'friendsRecommended'},
+  'GET /api/v1/users-hotel-recommended/:id_user/:id_hotel': {controller: 'RecommendedController', action: 'hotelUsersRecommended'},
   'POST /api/v1/recommended': {controller: 'RecommendedController', action: 'insert'},
 
   //CREDITI

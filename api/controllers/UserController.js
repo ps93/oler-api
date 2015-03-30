@@ -19,9 +19,7 @@ module.exports = {
       && params.access === 'email') {
       User.RegistrationWithEmail(res, params);
     }
-    else {
-      return res.badRequest({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
-    }
+    else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   },
 
   login: function (req, res) {
@@ -29,9 +27,7 @@ module.exports = {
     if (params.email && params.password) {
       User.LoginWithEmail(res, params.email, params.password);
     }
-    else {
-      return res.badRequest({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
-    }
+    else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   },
 
   social: function (req, res) {
@@ -39,9 +35,7 @@ module.exports = {
     if (params && (params.access === 'facebook' || params.access === 'google') && !params.password) {
       User.LoginOrRegistrationWithSocial(res, params);
     }
-    else {
-      return res.badRequest({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
-    }
+    else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   },
 
   setPassword: function (req, res) {
@@ -49,6 +43,7 @@ module.exports = {
     if (params && params.email) {
       User.SetPassword(res, params.email);
     }
+    else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   },
 
   myProfile: function (req, res) {
@@ -56,6 +51,7 @@ module.exports = {
     if (params.id_user) {
       User.MyProfile(res, params.id_user);
     }
+    else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   }
 
 };

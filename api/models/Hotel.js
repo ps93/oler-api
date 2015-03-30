@@ -40,15 +40,15 @@ module.exports = {
   Insert: function (res, params) {
     Hotel
       .create(params).exec(function (error, data) {
-        if (error) res.status(500).json({'message': sails.__({phrase: 'server_error', locale: 'it'})});
-        else  res.ok({'data': data});
+        if (error) return res.serverError({'message': error});
+        else return res.ok({'data': data});
       });
   },
 
   HotelById: function (res, idHotel) {
     Hotel.findOne({id: idHotel}).exec(function (error, data) {
-      if (error) res.status(500).json({'message': sails.__({phrase: 'server_error', locale: 'it'})});
-      else  res.ok({'data': data});
+      if (error) return res.serverError({'message': error});
+      else return res.ok({'data': data});
     });
   }
 

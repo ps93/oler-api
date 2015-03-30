@@ -35,7 +35,7 @@ module.exports = {
         Recommended
           .find({id_user: idUser, id_hotel: idHotel, id_friend: friends})
           .exec(function (error, data) {
-            if (error) callback(error);
+            if (error) return callback(error);
             else {
               for (var i = 0; i < friends.length; i++) {
                 if (data.length > 0) {
@@ -45,7 +45,7 @@ module.exports = {
                 }
                 else prepareInsertDocs.push({id_user: idUser, id_hotel: idHotel, id_friend: friends[i]});
               }
-              callback();
+              return callback();
             }
           });
       },
@@ -57,59 +57,15 @@ module.exports = {
           Recommended
             .create(prepareInsertDocs)
             .exec(function (error) {
-              if (error) res.serverError({'message': error});
-              else res.ok({'data': 'L\'hotel è stato condiviso con i tuoi amici'});
+              if (error) return callback(error);
+              else return res.ok({'data': 'L\'hotel è stato condiviso con i tuoi amici'});
             });
         }
-        else res.status(401).json({'message': 'L\'hotel è già stato consigliato con questi amici'});
+        else return res.status(401).json({'message': 'L\'hotel è già stato consigliato con questi amici'});
       }
     ], function (error) {
-      if (error) res.serverError({message: error});
+      if (error) return res.serverError({message: error});
     });
-  },
-
-  UserRecommended: function (res, idUser) {
-    Recommended
-      .find({id_user: idUser})
-      .populate('id_hotel')
-      .populate('id_friend')
-      .exec(function (error, data) {
-        if (error) res.serverError({message: error});
-        else {
-          var dataToShow = [];
-          var hotel_found = false;
-          var hotel_pos = undefined;
-
-          for (var i = 0; i < data.length; i++) {
-            var friendsData = {
-              id: data[i].id_friend.id, firstname: data[i].id_friend.firstname,
-              lastname: data[i].id_friend.lastname, image: data[i].id_friend.image
-            };
-
-            for (var j = 0; j < dataToShow.length; j++) {
-              if (data[i].id_hotel.id === dataToShow[j].id_hotel) {
-                hotel_pos = j;
-                hotel_found = true;
-                break;
-              }
-            }
-            if (hotel_found) {
-              dataToShow[hotel_pos].friends.push(friendsData);
-              hotel_pos = undefined;
-              hotel_found = false;
-            }
-            else {
-              dataToShow.push({
-                id_hotel: data[i].id_hotel.id,
-                name: data[i].id_hotel.name,
-                image: data[i].id_hotel.image,
-                friends: [friendsData]
-              });
-            }
-          }
-          res.ok({data: dataToShow});
-        }
-      });
   },
 
   FriendsRecommended: function (res, idUser) {
@@ -118,41 +74,24 @@ module.exports = {
       .populate('id_hotel')
       .populate('id_user')
       .exec(function (error, data) {
-        if (error) res.serverError({'message': error});
+        if (error) return res.serverError({'message': error});
         else {
-          var dataToShow = [];
-          var hotel_found = false;
-          var hotel_pos = undefined;
+          var dataToShow = _.groupBy(data, function (item) {
+            return (item.id_hotel && item.id) ? item.id_hotel.id : undefined;
+          });
 
-          for (var i = 0; i < data.length; i++) {
-            var friendsData = {
-              id: data[i].id_user.id, firstname: data[i].id_user.firstname,
-              lastname: data[i].id_user.lastname, image: data[i].id_user.image
-            };
-
-            for (var j = 0; j < dataToShow.length; j++) {
-              if (data[i].id_hotel.id === dataToShow[j].id_hotel) {
-                hotel_pos = j;
-                hotel_found = true;
-                break;
-              }
-            }
-            if (hotel_found) {
-              dataToShow[hotel_pos].friends.push(friendsData);
-              hotel_pos = undefined;
-              hotel_found = false;
-            }
-            else {
-              dataToShow.push({
-                id_hotel: data[i].id_hotel.id,
-                name: data[i].id_hotel.name,
-                image: data[i].id_hotel.image,
-                friends: [friendsData]
-              });
-            }
-          }
-          res.ok({data: dataToShow});
+          return res.ok({data2: dataToShow});
         }
+      });
+  },
+
+  HotelUsersRecommended: function (res, idUser, idHotel) {
+    Recommended
+      .find({id_friend: idUser, id_hotel: idHotel})
+      .populate('id_user')
+      .exec(function (error, data) {
+        if (error) return res.serverError({message: error});
+        else return res.ok({data: data});
       });
   }
 

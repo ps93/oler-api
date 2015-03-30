@@ -43,6 +43,7 @@ module.exports = {
     image: 'string',
     toJSON: function () {
       var obj = this.toObject();
+      obj.fullname = obj.firstname + ' ' + obj.lastname;
       delete obj.password;
       delete obj.access;
       delete obj.token;
@@ -74,6 +75,7 @@ module.exports = {
       function (callback) {
 
         passwordChiaro = params.password;
+        var getToken = SecurityManager.TokenGenerator(params.email, params.password);
 
         User
           .create({
@@ -82,11 +84,12 @@ module.exports = {
             email: params.email,
             password: MD5(params.password),
             access: params.access,
-            token: params.token
+            token: getToken
           })
           .exec(function (error, data) {
             if (error) callback(error);
             else {
+              data.accesstoken = data.token;
               userRegistered = data;
               return callback();
             }
@@ -121,9 +124,6 @@ module.exports = {
       /*    CONDIVISO L'APP CON L'UTENTE                              */
       /****************************************************************/
       function (callback) {
-        delete userRegistered.password;
-        delete userRegistered.token;
-        delete userRegistered.access;
         Shareapp
           .find({contact: userRegistered.email, sort: 'createdAt'})
           .exec(function (error, data) {
@@ -138,13 +138,40 @@ module.exports = {
   },
 
   LoginWithEmail: function (res, email, password) {
-    User
-      .findOne({email: email, password: MD5(password)})
-      .exec(function (error, data) {
-        if (error) return res.serverError({message: error});
-        else if (data) return res.ok({data: data});
-        else return res.ok({'message': sails.__({phrase: 'invalid_auth', locale: 'it'})});
-      });
+
+    var userFound = {};
+
+    async.series([
+      function (callback) {
+        User
+          .findOne({email: email, password: MD5(password)})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else if (!_.isEmpty(data)) {
+              userFound = data;
+              return callback();
+            }
+            else return res.ok({'message': sails.__({phrase: 'invalid_auth', locale: 'it'})});
+          });
+      },
+      function (callback) {
+
+        var getToken = SecurityManager.TokenGenerator(userFound.email, userFound.password);
+
+        User
+          .update({id: userFound.id}, {token: getToken})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else {
+              data[0].accesstoken = data[0].token;
+              return res.ok({data: data[0]});
+            }
+          });
+      }
+    ], function (error) {
+      if (error) res.serverError({'message': error});
+    });
+
   },
 
   LoginOrRegistrationWithSocial: function (res, params) {
