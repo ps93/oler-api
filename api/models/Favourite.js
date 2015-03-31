@@ -85,9 +85,9 @@ module.exports = {
       .find({id_user: idUser})
       .populate('id_hotel')
       .exec(function (error, data) {
-        if (error) res.serverError({message: error});
-        else if (data.length > 0) res.ok({data: _.sortBy(_.map(data, 'id_hotel'), 'name')});
-        else res.ok({message: 'Nessun hotel tra i preferiti.'});
+        if (error)  return res.serverError({message: error});
+        else if (data.length > 0) return res.ok({data: _.sortBy(_.map(data, 'id_hotel'), 'name')});
+        else return res.ok({data: []});
       });
   }
 

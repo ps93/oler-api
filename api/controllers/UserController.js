@@ -10,12 +10,10 @@ module.exports = {
   registrationWithEmail: function (req, res) {
     var params = req.body;
 
-    if (params.access === 'email'
+    if (params.access
       && params.password
       && params.firstname
       && params.lastname
-      && params.token
-      && params.access
       && params.access === 'email') {
       User.RegistrationWithEmail(res, params);
     }

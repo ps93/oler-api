@@ -79,8 +79,8 @@ module.exports = {
           var dataToShow = _.groupBy(data, function (item) {
             return (item.id_hotel && item.id) ? item.id_hotel.id : undefined;
           });
-
-          return res.ok({data2: dataToShow});
+          if (dataToShow) return res.ok({data: dataToShow});
+          else return res.ok({data: []});
         }
       });
   },

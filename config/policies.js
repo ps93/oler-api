@@ -46,6 +46,24 @@ module.exports.policies = {
     'social': 'checkIfUserCanUsePublicApi',
     'setPassword': 'checkIfUserCanUsePublicApi',
     'myProfile': 'checkIfUserCanUsePrivateApi'
+  },
+  ShareappController: {
+    '*': 'checkIfUserCanUsePrivateApi'
+  },
+  RecommendedController: {
+    '*': 'checkIfUserCanUsePrivateApi'
+  },
+  HotelController: {
+    '*': 'checkIfUserCanUsePrivateApi'
+  },
+  FavouriteController: {
+    '*': 'checkIfUserCanUsePrivateApi'
+  },
+  FriendController: {
+    '*': 'checkIfUserCanUsePrivateApi'
+  },
+  CreditController: {
+    '*': 'checkIfUserCanUsePrivateApi'
   }
 
 };
