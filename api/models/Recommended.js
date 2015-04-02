@@ -19,6 +19,11 @@ module.exports = {
     },
     id_friend: {
       model: 'user'
+    },
+    status: {
+      type: 'string',
+      enum: ['pending', 'approved', 'denied'],
+      defaultsTo: 'pending'
     }
   },
 
@@ -58,7 +63,7 @@ module.exports = {
             .create(prepareInsertDocs)
             .exec(function (error) {
               if (error) return callback(error);
-              else return res.ok({'data': 'L\'hotel è stato condiviso con i tuoi amici'});
+              else return res.ok({'message': 'L\'hotel è stato condiviso con i tuoi amici'});
             });
         }
         else return res.status(401).json({'message': 'L\'hotel è già stato consigliato con questi amici'});
@@ -70,7 +75,7 @@ module.exports = {
 
   FriendsRecommended: function (res, idUser) {
     Recommended
-      .find({id_friend: idUser})
+      .find({id_friend: idUser, status: 'pending'})
       .populate('id_hotel')
       .populate('id_user')
       .exec(function (error, data) {
@@ -79,19 +84,60 @@ module.exports = {
           var dataToShow = _.groupBy(data, function (item) {
             return (item.id_hotel && item.id) ? item.id_hotel.id : undefined;
           });
-          if (dataToShow) return res.ok({data: dataToShow});
+          if (!_.isEmpty(dataToShow)) return res.ok({data: dataToShow});
           else return res.ok({data: []});
         }
       });
   },
 
-  HotelUsersRecommended: function (res, idUser, idHotel) {
+  HotelsUsersRecommended: function (res, idUser) {
     Recommended
-      .find({id_friend: idUser, id_hotel: idHotel})
+      .find({id_friend: idUser, status: 'approved'})
       .populate('id_user')
+      .populate('id_hotel')
       .exec(function (error, data) {
         if (error) return res.serverError({message: error});
-        else return res.ok({data: data});
+        else {
+          var dataToShow = _.groupBy(data, function (item) {
+            return (item.id_hotel && item.id) ? item.id_hotel.id : undefined;
+          });
+          if (!_.isEmpty(dataToShow)) return res.ok({data: dataToShow});
+          else return res.ok({data: []});
+        }
+      });
+  },
+
+  ApprovedHotelRecommended: function (res, idHotel, idUser) {
+
+    Recommended
+      .update({
+        id_friend: idUser,
+        id_hotel: idHotel
+      },
+      {
+        status: 'approved'
+      })
+      .exec(function (error, data) {
+        if (error) return res.serverError({message: error});
+        else if (data.length > 0) return res.ok({data: data});
+        else return res.status(404).json({message: 'L\'hotel non è presente nella nostra base dati'});
+      });
+  },
+
+  DeniedHotelRecommended: function (res, idHotel, idUser) {
+
+    Recommended
+      .update({
+        id_friend: idUser,
+        id_hotel: idHotel
+      },
+      {
+        status: 'denied'
+      })
+      .exec(function (error, data) {
+        if (error) return res.serverError({message: error});
+        else if (data.length > 0) return res.ok({data: data});
+        else return res.status(404).json({message: 'L\'hotel non è presente nella nostra base dati'});
       });
   }
 

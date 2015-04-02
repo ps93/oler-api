@@ -25,11 +25,29 @@ module.exports = {
     else return res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   },
 
-  hotelUsersRecommended: function (req, res) {
+  hotelsUsersRecommended: function (req, res) {
     var params = req.params;
 
-    if (params.id_user && params.id_hotel) {
-      Recommended.HotelUsersRecommended(res, params.id_user, params.id_hotel);
+    if (params.id_user) {
+      Recommended.HotelsUsersRecommended(res, params.id_user);
+    }
+    else return res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+  },
+
+  approvedHotelRecommended: function (req, res) {
+    var params = req.params;
+
+    if (params.id_hotel && params.id_hotel) {
+      Recommended.ApprovedHotelRecommended(res, params.id_hotel, params.id_user);
+    }
+    else return res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+  },
+
+  deniedHotelRecommended: function (req, res) {
+    var params = req.params;
+
+    if (params.id_hotel &&  params.id_user) {
+      Recommended.DeniedHotelRecommended(res, params.id_hotel, params.id_user);
     }
     else return res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   }
