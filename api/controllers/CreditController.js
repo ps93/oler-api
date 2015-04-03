@@ -10,11 +10,26 @@ module.exports = {
   insertCredit: function (req, res) {
     var params = req.body;
 
-    if (params.id_user && params.id_hotel && params.id_reservation)
-      Credit.InsertCredit(res, params.id_user, params.id_hotel, params.id_reservation);
+    if (params.id_user
+      && params.id_hotel
+      && params.id_reservation
+      && params.total_reservation
+      && params.reservation_date
+      && params.currency) {
 
-    else
-      res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+      Credit.InsertCredit(
+        res,
+        params.id_user,
+        params.id_hotel,
+        params.id_reservation,
+        params.total_reservation,
+        params.reservation_date,
+        params.currency
+      );
+
+    }
+
+    else return res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   },
 
   myCredits: function (req, res) {

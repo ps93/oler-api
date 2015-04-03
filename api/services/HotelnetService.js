@@ -25,6 +25,10 @@ module.exports = {
         'Content-Length': requestPrepared.length
       }
     };
+  },
+
+  CalculateCredits: function (total, percentage) {
+    return (total * percentage) / 100;
   }
 
 };
