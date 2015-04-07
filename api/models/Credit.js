@@ -213,6 +213,35 @@ module.exports = {
         if (error) return res.serverError({'message': error});
         else return res.ok({data: data});
       });
+  },
+
+  MyReservationsCredits: function(res, idUser) {
+
+    Credit
+      .find({
+        id_user: idUser,
+        level: "0",
+        sort: 'reservation_date'
+      })
+      .populate('id_hotel')
+      .exec(function (error, data) {
+        if (error) return res.serverError({'message': error});
+        else return res.ok({data: data});
+      });
+  },
+
+
+  AllCredits: function(res, idUser) {
+
+    Credit
+      .find({
+        id_user: idUser,
+        sort: 'reservation_date'
+      })
+      .exec(function (error, data) {
+        if (error) return res.serverError({'message': error});
+        else return res.ok({data: data});
+      });
   }
 
 };

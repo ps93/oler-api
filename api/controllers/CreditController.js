@@ -40,6 +40,26 @@ module.exports = {
 
     else
       res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+  },
+
+  myReservationsCredits: function (req, res) {
+    var params = req.params;
+
+    if (params.id_user)
+      Credit.MyReservationsCredits(res, params.id_user);
+
+    else
+      res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+  },
+
+  allCredits: function (req, res) {
+    var params = req.params;
+
+    if (params.id_user)
+      Credit.AllCredits(res, params.id_user);
+
+    else
+      res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   }
 
 };

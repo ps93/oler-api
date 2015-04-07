@@ -78,6 +78,8 @@ module.exports.routes = {
 
   //CREDITI
   'GET /api/v1/credits/:id_user': {controller: 'CreditController', action: 'myCredits'},
+  'GET /api/v1/myreservationscredits/:id_user': {controller: 'CreditController', action: 'myReservationsCredits'},
+  'GET /api/v1/allmycredits/:id_user': {controller: 'CreditController', action: 'allCredits'},
   'POST /api/v1/credits': {controller: 'CreditController', action: 'insertCredit'}
 
 };
