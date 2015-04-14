@@ -27,7 +27,7 @@ module.exports = {
     }
   },
 
-  Insert: function (res, idUser, idHotel, friends) {
+  Insert: function (res, idUser, idHotel, friends, params) {
 
     var prepareInsertDocs = [];
 
@@ -53,6 +53,36 @@ module.exports = {
               return callback();
             }
           });
+      },
+      function (callback) {
+        if (params.is_hotelnet) {
+          Hotel
+            .findOrCreate({id: idHotel}, {
+              id: idHotel,
+              middleware_code: params.middleware_code,
+              provider_code: params.provider_code,
+              name: params.name,
+              street_address: params.street_address,
+              city: params.city,
+              country: params.country,
+              postal_code: params.postal_code,
+              latitude: params.latitude,
+              longitude: params.longitude,
+              email: params.email,
+              phone: params.phone,
+              fax: params.fax,
+              image: params.image,
+              photos: params.photos,
+              website: params.website,
+              stars: params.stars,
+              is_hotelnet: params.is_hotelnet
+            })
+            .exec(function (error) {
+              if (error) callback(error);
+              else callback();
+            });
+        }
+        else callback();
       },
       /****************************************************************/
       /* 2.  INSERIMENTO DEL HOTEL CONSIGLIATO                         */
@@ -138,6 +168,16 @@ module.exports = {
         if (error) return res.serverError({message: error});
         else if (data.length > 0) return res.ok({data: data});
         else return res.status(404).json({message: 'L\'hotel non è presente nella nostra base dati'});
+      });
+  },
+
+  HotelUsersRecommended: function (res, idUser, idHotel) {
+    Recommended
+      .find({id_friend: idUser, id_hotel: idHotel, status: 'approved'})
+      .populate('id_user')
+      .exec(function (error, data) {
+        if (error) return res.serverError({message: error});
+        else return res.ok({data: data});
       });
   }
 

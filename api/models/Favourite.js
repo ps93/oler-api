@@ -49,6 +49,7 @@ module.exports = {
             image: params.image,
             photos: params.photos,
             website: params.website,
+            stars: params.stars,
             is_hotelnet: params.is_hotelnet
           })
           .exec(function (error) {

@@ -72,6 +72,7 @@ module.exports.routes = {
   // HOTEL CONSIGLIATI
   'GET /api/v1/recommended-friends/:id_user': {controller: 'RecommendedController', action: 'friendsRecommended'},
   'GET /api/v1/hotels-users-recommended/:id_user': {controller: 'RecommendedController', action: 'hotelsUsersRecommended'},
+  'GET /api/v1/hotel-users-recommended/:id_user/:id_hotel': {controller: 'RecommendedController', action: 'hotelUsersRecommended'},
   'GET /api/v1/status-hotel-recommended/:id_hotel/:id_user': {controller: 'RecommendedController', action: 'approvedHotelRecommended'},
   'POST /api/v1/recommended': {controller: 'RecommendedController', action: 'insert'},
   'DELETE /api/v1/status-hotel-recommended/:id_hotel/:id_user': {controller: 'RecommendedController', action: 'deniedHotelRecommended'},
