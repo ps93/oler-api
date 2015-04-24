@@ -18,7 +18,7 @@ module.exports = {
     }
   },
 
-  Insert: function (res, req, idUser, idHotel, params) {
+  Insert: function (res, idUser, idHotel, params) {
 
     async.series([
       function (callback) {
@@ -62,12 +62,7 @@ module.exports = {
           .create({id_user: idUser, id_hotel: idHotel})
           .exec(function (error, data) {
             if (error) callback(error);
-            else {
-              sails.sockets.blast('favouriteAdded', {
-                message: 'Qualcuno ha aggiunto l\'hotel ' + params.name + ' tra i suoi preferiti'
-              }, req.socket);
-              res.ok({data: sails.__({phrase: 'add_hotel_favourites', locale: 'it'})});
-            }
+            else res.ok({data: sails.__({phrase: 'add_hotel_favourites', locale: 'it'})});
           });
       }
     ], function (error) {

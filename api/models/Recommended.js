@@ -27,7 +27,7 @@ module.exports = {
     }
   },
 
-  Insert: function (res, idUser, idHotel, friends, params) {
+  Insert: function (res, req, idUser, idHotel, friends, params) {
 
     var prepareInsertDocs = [];
 
@@ -46,6 +46,7 @@ module.exports = {
                 if (data.length > 0) {
                   if ((_.where(data, {id_friend: friends[i]})).length == 0) {
                     prepareInsertDocs.push({id_user: idUser, id_hotel: idHotel, id_friend: friends[i]});
+
                   }
                 }
                 else prepareInsertDocs.push({id_user: idUser, id_hotel: idHotel, id_friend: friends[i]});
@@ -93,7 +94,10 @@ module.exports = {
             .create(prepareInsertDocs)
             .exec(function (error) {
               if (error) return callback(error);
-              else return res.ok({'message': 'L\'hotel è stato condiviso con i tuoi amici'});
+              else {
+                NotificationsService.recommendedHotel(req, idUser, prepareInsertDocs, params);
+                return res.ok({'message': 'L\'hotel è stato condiviso con i tuoi amici', data: prepareInsertDocs});
+              }
             });
         }
         else return res.status(401).json({'message': 'L\'hotel è già stato consigliato con questi amici'});
