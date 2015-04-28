@@ -175,38 +175,130 @@ module.exports = {
   },
 
   LoginOrRegistrationWithSocial: function (res, params) {
-    User
-      .findOne({email: params.email})
-      .exec(function (error, checkUserEmail) {
-        if (error) return res.serverError({data: error});
-        else if (checkUserEmail) {
-          User
-            .update({id: checkUserEmail.id}, {image: params.image, token: params.token})
-            .exec(function (error, userUpdated) {
-              if (error) return res.serverError({'message': error});
-              else return res.ok({data: userUpdated});
-            });
-        }
-        else {
-          User
-            .create({
-              firstname: params.firstname,
-              lastname: params.lastname,
-              email: params.email,
-              access: params.access,
-              token: params.token,
-              image: params.image
-            }).exec(function (error, userCreated) {
-              if (error) return res.serverError({'message': error});
-              else {
-                delete userCreated.password;
-                delete userCreated.token;
-                delete userCreated.access;
-                return res.ok({'data': userCreated});
-              }
-            });
-        }
-      });
+
+    var userRegistered;
+
+    async.series([
+      /****************************************************************/
+      /* 1. VERIFICA CHE L'UTENTE NON SIA GIA' REGISTRATO             */
+      /****************************************************************/
+      function (callback) {
+        User
+          .findOne({email: params.email})
+          .exec(function (error, checkUserEmail) {
+            if (error) return callback(error);
+            else if (checkUserEmail) {
+              var getToken = SecurityManager.TokenGenerator(params.email, 'socialpassword');
+              User
+                .update({id: checkUserEmail.id}, {image: params.image, token: getToken})
+                .exec(function (error, userUpdated) {
+                  if (error) return res.serverError({'message': error});
+                  else {
+                    userUpdated[0].accesstoken = userUpdated[0].token;
+                    return res.ok({data: userUpdated[0]});
+                  }
+                });
+            }
+            else return callback();
+          });
+      },
+      /****************************************************************/
+      /* 2. REGISTRAZIONE DELL'UTENTE NEL DATABASE DI OLER            */
+      /****************************************************************/
+      function (callback) {
+
+        var getToken = SecurityManager.TokenGenerator(params.email, 'socialpassword');
+
+        User
+          .create({
+            firstname: params.firstname,
+            lastname: params.lastname,
+            email: params.email,
+            access: params.access,
+            token: getToken
+          })
+          .exec(function (error, data) {
+            if (error) callback(error);
+            else {
+              data.accesstoken = data.token;
+              userRegistered = data;
+              return callback();
+            }
+          });
+      },
+      /****************************************************************/
+      /* 3. REGISTRAZIONE UTENTE NEL DATABASE DI HOTELNET             */
+      /****************************************************************/
+      function (callback) {
+        var requestPrepared = HotelnetService.HotelnetRegistrationPrepare('1', userRegistered, passwordChiaro);
+        var options = HotelnetService.HotelnetRegistrationOptions(requestPrepared);
+
+        var request = https.request(options, function (response) {
+          response.setEncoding('utf8');
+
+          response.on('data', function (chunk) {
+            var dataFromApi = JSON.parse(chunk);
+            if (dataFromApi.registration_confirmed) return callback();
+            else User.Remove(res, userRegistered.id);
+          });
+        });
+
+        request.on('error', function (e) {
+          User.Remove(res, userRegistered.id);
+        });
+
+        request.write(requestPrepared);
+        request.end();
+      },
+      /****************************************************************/
+      /* 4. CONTROLLA SE SONO PRESENTI PERSONE CHE ABBIANO            */
+      /*    CONDIVISO L'APP CON L'UTENTE                              */
+      /****************************************************************/
+      function (callback) {
+        Shareapp
+          .find({contact: userRegistered.email, sort: 'createdAt'})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else if (data.length > 0) Friend.InsertFriendsOnUserRegistration(res, userRegistered, data);
+            else return res.ok({data: userRegistered});
+          });
+      }
+    ], function (error) {
+      if (error) res.serverError({'message': error});
+    });
+
+    /*User
+     .findOne({email: params.email})
+     .exec(function (error, checkUserEmail) {
+     if (error) return res.serverError({data: error});
+     else if (checkUserEmail) {
+     User
+     .update({id: checkUserEmail.id}, {image: params.image, token: params.token})
+     .exec(function (error, userUpdated) {
+     if (error) return res.serverError({'message': error});
+     else return res.ok({data: userUpdated});
+     });
+     }
+     else {
+     User
+     .create({
+     firstname: params.firstname,
+     lastname: params.lastname,
+     email: params.email,
+     access: params.access,
+     token: params.token,
+     image: params.image
+     }).exec(function (error, userCreated) {
+     if (error) return res.serverError({'message': error});
+     else {
+     delete userCreated.password;
+     delete userCreated.token;
+     delete userCreated.access;
+     return res.ok({'data': userCreated});
+     }
+     });
+     }
+     });*/
   },
 
   SetPassword: function (res, email) {

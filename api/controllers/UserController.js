@@ -10,10 +10,11 @@ module.exports = {
   registrationWithEmail: function (req, res) {
     var params = req.body;
 
-    if (params.access
+    if (params.email
       && params.password
       && params.firstname
       && params.lastname
+      && params.access
       && params.access === 'email') {
       User.RegistrationWithEmail(res, params);
     }
@@ -30,7 +31,10 @@ module.exports = {
 
   social: function (req, res) {
     var params = req.body;
-    if (params && (params.access === 'facebook' || params.access === 'google') && !params.password) {
+    if (params.email
+      && params.firstname
+      && params.lastname
+      && (params.access === 'facebook' || params.access === 'google')) {
       User.LoginOrRegistrationWithSocial(res, params);
     }
     else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
