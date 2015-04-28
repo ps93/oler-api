@@ -11,7 +11,7 @@ module.exports = {
     var params = req.body;
 
     if (params.id_user && params.id_hotel && params.name && params.hasOwnProperty('is_hotelnet'))
-      Favourite.Insert(res, req, params.id_user, params.id_hotel, params);
+      Favourite.Insert(res, params.id_user, params.id_hotel, params);
 
     else res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   },
