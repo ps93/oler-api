@@ -115,10 +115,34 @@ module.exports = {
   },
 
   RemoveFakeFriend: function (res, idUser, idFriend) {
-    Friend.update({id_user: idUser, id_friend: idFriend}, {are_friends: false}).exec(function (error, data) {
+    console.log("user" + idUser);
+    console.log("friend" + idFriend);
+    async.parallel([
+      function (callback) {
+        Friend
+          .update({id_user: idUser, id_friend: idFriend}, {are_friends: false})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else return callback();
+          });
+      },
+      function (callback) {
+        Friend.update({id_user: idFriend, id_friend: idUser}, {are_friends: false}).exec(function (error, data) {
+          if (error) return callback(error);
+          else return callback();
+        });
+      }
+    ], function (error, responses) {
       if (error) return res.serverError({message: error});
-      else return res.ok({data: data});
+      else {
+        console.log(responses);
+        return res.ok({data: responses});
+      }
     });
+    /*Friend.update({id_user: idUser, id_friend: idFriend}, {are_friends: false}).exec(function (error, data) {
+     if (error) return res.serverError({message: error});
+     else return res.ok({data: data});
+     });*/
   }
 
 };
