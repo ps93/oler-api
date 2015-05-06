@@ -108,41 +108,54 @@ module.exports = {
   },
 
   AddFakeFriend: function (res, idUser, idFriend) {
-    Friend.update({id_user: idUser, id_friend: idFriend}, {are_friends: true}).exec(function (error, data) {
+    async.series([
+      function (callback) {
+        Friend
+          .update({id_user: idUser, id_friend: idFriend}, {are_friends: true})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else if (data.length > 0) return res.ok({data: data});
+            else return callback();
+          });
+      },
+      function (callback) {
+        Friend
+          .update({id_user: idFriend, id_friend: idUser}, {are_friends: true})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else if (data.length > 0) return res.ok({data: data});
+            else return res.status(401).json({message: ''});
+          });
+      }
+    ], function (error, responses) {
       if (error) return res.serverError({message: error});
-      else return res.ok({data: data});
     });
+
   },
 
   RemoveFakeFriend: function (res, idUser, idFriend) {
-    console.log("user" + idUser);
-    console.log("friend" + idFriend);
-    async.parallel([
+    async.series([
       function (callback) {
         Friend
           .update({id_user: idUser, id_friend: idFriend}, {are_friends: false})
           .exec(function (error, data) {
             if (error) return callback(error);
+            else if (data.length > 0) return res.ok({data: data});
             else return callback();
           });
       },
       function (callback) {
-        Friend.update({id_user: idFriend, id_friend: idUser}, {are_friends: false}).exec(function (error, data) {
-          if (error) return callback(error);
-          else return callback();
-        });
+        Friend
+          .update({id_user: idFriend, id_friend: idUser}, {are_friends: false})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else if (data.length > 0) return res.ok({data: data});
+            else return res.status(401).json({message: ''});
+          });
       }
     ], function (error, responses) {
       if (error) return res.serverError({message: error});
-      else {
-        console.log(responses);
-        return res.ok({data: responses});
-      }
     });
-    /*Friend.update({id_user: idUser, id_friend: idFriend}, {are_friends: false}).exec(function (error, data) {
-     if (error) return res.serverError({message: error});
-     else return res.ok({data: data});
-     });*/
   }
 
 };
