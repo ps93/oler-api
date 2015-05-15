@@ -9,8 +9,9 @@ module.exports = {
 
   insert: function (req, res) {
     var params = req.body;
-    if (params.id_user && params.contacts && params.contacts.length > 0) {
-      Shareapp.Insert(res, params.id_user, params.contacts);
+    if (params.id_user && params.contacts && _.isArray(params.contacts) && params.contacts.length > 0) {
+      var contacts = ValidationService.ValidationTrim(params.contacts, 'email');
+      Shareapp.Insert(res, params.id_user, contacts);
     }
     else res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   }

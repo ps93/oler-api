@@ -28,12 +28,15 @@ module.exports = {
     });
   },
 
-  ShareAppWithContacts: function (res, contacts) {
+  ShareAppWithContacts: function (res, contacts, fullName) {
+
+    contacts.push('gabriel.mayta@hotel-net.it');
+
     var prepareEmail = {
       from: 'Oler Srl<oler@gmail.com>',
-      bcc: contacts,
+      bcc: contacts,// PER MOTIVI DI PRIVACY
       subject: "Condividi questa fantastica app",
-      html: "Condividi questa fantastica app"
+      html: fullName +" ha condiviso con te questa fantastica app, clicca sul link per scaricarla"
     };
 
     var config = this.EmailConfiguration();

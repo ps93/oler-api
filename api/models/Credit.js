@@ -54,6 +54,16 @@ module.exports = {
       type: 'float',
       required: true
     },
+    status: {
+      type: 'string',
+      // A. Prenotazione Confermata
+      // C. Prenotazione Cancellata
+      enum: ["A", "C"],
+      defaultsTo: 'A'
+    },
+    penalityAmount: {
+      type: 'date'
+    },
     toJSON: function () {
       var obj = this.toObject();
       obj.friend = obj.id_friend;
@@ -199,6 +209,76 @@ module.exports = {
     });
   },
 
+  UpdateCredits: function (res, reservationId, penalityAmount) {
+    var prepareRequest = [];
+    var prepareData = [];
+    var creditsData = [];
+    var creditsUpdated = [];
+
+    async.series([
+        // RICALCOLO DEL CREDITO DI TUTTI GLI UTENTI
+        // IN BASE ALL'ID DELLA PRENOTAZIONE
+        function (callback) {
+          Credit
+            .find({id_reservation: reservationId})
+            .exec(function (error, data) {
+              if (error) return callback(error);
+              else if (data.length > 0) {
+                for (var i = 0; i < data.length; i++) {
+                  var updateCredit = HotelnetService.CalculateCredits(penalityAmount, data[i].percentage);
+                  prepareRequest.push({ id: data[i].id });
+                  prepareData.push({ credits: updateCredit, status: 'C'});
+                }
+                return callback();
+              }
+              else return callback(error);
+            });
+        },
+        // AGGIORNAMENTO DEL CREDITO RIGA 1
+        function (callback) {
+          Credit
+            .update(prepareRequest[0], prepareData[0])
+            .exec(function(error, data){
+              if(error) return callback(error);
+              else if(prepareRequest.length > 1) {
+                creditsData.push(data);
+                return callback();
+              }
+              else return res.ok({data: data});
+            });
+        },
+        // AGGIORNAMENTO DEL CREDITO RIGA 2
+        function (callback) {
+          Credit
+            .update(prepareRequest[1], prepareData[1])
+            .exec(function(error, data){
+              if(error) return callback(error);
+              else if(prepareRequest.length > 2) {
+                creditsData.push(data);
+                return callback();
+              }
+              else return res.ok({data: data});
+            });
+        },
+        // AGGIORNAMENTO DEL CREDITO RIGA 3
+        function (callback) {
+          Credit
+            .update(prepareRequest[2], prepareData[2])
+            .exec(function(error, data){
+              if(error) return callback(error);
+              else {
+                creditsData.push(data);
+                return res.ok({data: creditsData});
+              }
+            });
+        }
+      ],
+      function (error) {
+        if (error) return res.serverError({message: error});
+      }
+    );
+  },
+
   MyCredits: function (res, idUser) {
 
     Credit
@@ -215,7 +295,7 @@ module.exports = {
       });
   },
 
-  MyReservationsCredits: function(res, idUser) {
+  MyReservationsCredits: function (res, idUser) {
 
     Credit
       .find({
@@ -231,7 +311,7 @@ module.exports = {
   },
 
 
-  AllCredits: function(res, idUser) {
+  AllCredits: function (res, idUser) {
 
     Credit
       .find({

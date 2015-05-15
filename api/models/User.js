@@ -37,7 +37,7 @@ module.exports = {
       required: true
     },
     token: {
-      type: 'string',
+      type: 'array',
       required: true
     },
     image: 'string',
@@ -75,7 +75,7 @@ module.exports = {
       function (callback) {
 
         passwordChiaro = params.password;
-        var getToken = SecurityManager.TokenGenerator(params.email, params.password);
+        var getToken = SecurityManager.TokenGenerator(params.email);
 
         User
           .create({
@@ -84,12 +84,12 @@ module.exports = {
             email: params.email,
             password: MD5(params.password),
             access: params.access,
-            token: getToken
+            token: [getToken]
           })
           .exec(function (error, data) {
             if (error) callback(error);
             else {
-              data.accesstoken = data.token;
+              data.accesstoken = getToken;
               userRegistered = data;
               return callback();
             }
@@ -140,6 +140,7 @@ module.exports = {
   LoginWithEmail: function (res, email, password) {
 
     var userFound = {};
+    var tokens = [];
 
     async.series([
       function (callback) {
@@ -149,6 +150,7 @@ module.exports = {
             if (error) return callback(error);
             else if (!_.isEmpty(data)) {
               userFound = data;
+              tokens = data.token || [];
               return callback();
             }
             else return res.ok({'message': sails.__({phrase: 'invalid_auth', locale: 'it'})});
@@ -156,14 +158,15 @@ module.exports = {
       },
       function (callback) {
 
-        var getToken = SecurityManager.TokenGenerator(userFound.email, userFound.password);
+        var getToken = SecurityManager.TokenGenerator(userFound.email);
+        tokens.push(getToken);
 
         User
-          .update({id: userFound.id}, {token: getToken})
+          .update({id: userFound.id}, {token: tokens})
           .exec(function (error, data) {
             if (error) return callback(error);
             else {
-              data[0].accesstoken = data[0].token;
+              data[0].accesstoken = getToken;
               return res.ok({data: data[0]});
             }
           });
@@ -177,24 +180,33 @@ module.exports = {
   LoginOrRegistrationWithSocial: function (res, params) {
 
     var userRegistered;
+    var passwordChiaro;
 
     async.series([
       /****************************************************************/
       /* 1. VERIFICA CHE L'UTENTE NON SIA GIA' REGISTRATO             */
       /****************************************************************/
       function (callback) {
+        var tokens = [];
+
         User
           .findOne({email: params.email})
           .exec(function (error, checkUserEmail) {
             if (error) return callback(error);
             else if (checkUserEmail) {
-              var getToken = SecurityManager.TokenGenerator(params.email, 'socialpassword');
+              tokens = checkUserEmail.token || [];
+              var getToken = SecurityManager.TokenGenerator(params.email);
+              tokens.push(getToken);
               User
-                .update({id: checkUserEmail.id}, {image: params.image, token: getToken})
+                .update({id: checkUserEmail.id}, {
+                    access: params.access,
+                    image: params.image, 
+                    token: tokens
+                  })
                 .exec(function (error, userUpdated) {
                   if (error) return res.serverError({'message': error});
                   else {
-                    userUpdated[0].accesstoken = userUpdated[0].token;
+                    userUpdated[0].accesstoken = getToken;
                     return res.ok({data: userUpdated[0]});
                   }
                 });
@@ -207,7 +219,7 @@ module.exports = {
       /****************************************************************/
       function (callback) {
 
-        var getToken = SecurityManager.TokenGenerator(params.email, 'socialpassword');
+        var getToken = SecurityManager.TokenGenerator(params.email);
 
         User
           .create({
@@ -215,12 +227,12 @@ module.exports = {
             lastname: params.lastname,
             email: params.email,
             access: params.access,
-            token: getToken
+            token: [getToken]
           })
           .exec(function (error, data) {
             if (error) callback(error);
             else {
-              data.accesstoken = data.token;
+              data.accesstoken = getToken;
               userRegistered = data;
               return callback();
             }
@@ -230,7 +242,7 @@ module.exports = {
       /* 3. REGISTRAZIONE UTENTE NEL DATABASE DI HOTELNET             */
       /****************************************************************/
       function (callback) {
-        var requestPrepared = HotelnetService.HotelnetRegistrationPrepare('1', userRegistered, passwordChiaro);
+        var requestPrepared = HotelnetService.HotelnetRegistrationPrepare('1', userRegistered, userRegistered.email);
         var options = HotelnetService.HotelnetRegistrationOptions(requestPrepared);
 
         var request = https.request(options, function (response) {
@@ -267,38 +279,6 @@ module.exports = {
       if (error) res.serverError({'message': error});
     });
 
-    /*User
-     .findOne({email: params.email})
-     .exec(function (error, checkUserEmail) {
-     if (error) return res.serverError({data: error});
-     else if (checkUserEmail) {
-     User
-     .update({id: checkUserEmail.id}, {image: params.image, token: params.token})
-     .exec(function (error, userUpdated) {
-     if (error) return res.serverError({'message': error});
-     else return res.ok({data: userUpdated});
-     });
-     }
-     else {
-     User
-     .create({
-     firstname: params.firstname,
-     lastname: params.lastname,
-     email: params.email,
-     access: params.access,
-     token: params.token,
-     image: params.image
-     }).exec(function (error, userCreated) {
-     if (error) return res.serverError({'message': error});
-     else {
-     delete userCreated.password;
-     delete userCreated.token;
-     delete userCreated.access;
-     return res.ok({'data': userCreated});
-     }
-     });
-     }
-     });*/
   },
 
   SetPassword: function (res, email) {

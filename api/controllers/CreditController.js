@@ -52,6 +52,16 @@ module.exports = {
       res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   },
 
+  updateCredits: function (req, res) {
+    var params = req.body;
+
+    if (params.reservationId && params.penalityAmount)
+      Credit.UpdateCredits(res, params.reservationId, params.penalityAmount);
+
+    else
+      res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+  },
+
   allCredits: function (req, res) {
     var params = req.params;
 

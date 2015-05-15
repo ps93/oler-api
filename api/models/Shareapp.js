@@ -39,13 +39,14 @@ module.exports = {
             .find({email: emailContacts})
             .exec(function (error, data) {
               if (error) return callback(error);
-              else {
+              else if(data.length > 0) {
                 for (var i = 0; i < contacts.length; i++) {
                   if ((_.where(data, {email: contacts[i].email})).length === 0)
                     contactsNotRegistered.push(contacts[i]);
                 }
                 return callback();
               }
+              else return callback();
             });
         },
         //****************************************************************//
