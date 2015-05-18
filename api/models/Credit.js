@@ -61,9 +61,7 @@ module.exports = {
       enum: ["A", "C"],
       defaultsTo: 'A'
     },
-    penalityAmount: {
-      type: 'date'
-    },
+    penalityAmount: 'float',
     toJSON: function () {
       var obj = this.toObject();
       obj.friend = obj.id_friend;
@@ -226,7 +224,11 @@ module.exports = {
                 for (var i = 0; i < data.length; i++) {
                   var updateCredit = HotelnetService.CalculateCredits(penalityAmount, data[i].percentage);
                   prepareRequest.push({id: data[i].id});
-                  prepareData.push({credits: updateCredit, status: 'C'});
+                  prepareData.push({
+                    credits: updateCredit,
+                    status: 'C',
+                    penalityAmount: penalityAmount
+                  });
                 }
                 return callback();
               }
@@ -240,7 +242,7 @@ module.exports = {
             .exec(function (error, data) {
               if (error) return callback(error);
               else {
-                creditsData.push(data);
+                creditsData.push(data[0]);
                 if (prepareRequest.length > 1) return callback();
                 else return res.ok({data: creditsData});
               }
@@ -253,7 +255,7 @@ module.exports = {
             .exec(function (error, data) {
               if (error) return callback(error);
               else {
-                creditsData.push(data);
+                creditsData.push(data[0]);
                 if (prepareRequest.length > 2) return callback();
                 else return res.ok({data: creditsData});
               }
@@ -266,7 +268,7 @@ module.exports = {
             .exec(function (error, data) {
               if (error) return callback(error);
               else {
-                creditsData.push(data);
+                creditsData.push(data[0]);
                 return res.ok({data: creditsData});
               }
             });
