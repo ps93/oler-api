@@ -36,10 +36,7 @@ module.exports = {
       enum: ['facebook', 'google', 'email'],
       required: true
     },
-    token: {
-      type: 'array',
-      required: true
-    },
+    token:  'array',
     image: 'string',
     toJSON: function () {
       var obj = this.toObject();
@@ -199,10 +196,10 @@ module.exports = {
               tokens.push(getToken);
               User
                 .update({id: checkUserEmail.id}, {
-                    access: params.access,
-                    image: params.image, 
-                    token: tokens
-                  })
+                  access: params.access,
+                  image: params.image,
+                  token: tokens
+                })
                 .exec(function (error, userUpdated) {
                   if (error) return res.serverError({'message': error});
                   else {
@@ -300,6 +297,42 @@ module.exports = {
         else if (data) return res.ok({data: data});
         else return res.status(404).json({message: 'L\'utente non è stato trovato'});
       });
+  },
+
+  Logout: function (res, idUser, token) {
+
+    var tokens = [];
+
+    async.series([
+        function (callback) {
+          User
+            .findOne({id: idUser, token: token})
+            .exec(function (error, data) {
+              if (error) return callback(error);
+              else {
+                tokens = data.token;
+                return callback();
+              }
+            });
+        },
+        function (callback) {
+          var tokensUpdated = _.remove(tokens, function (item) {
+            return item !== token;
+          });
+
+          User
+            .update({id: idUser}, {token: tokensUpdated})
+            .exec(function (error, data) {
+              if (error) return callback(error);
+              else return res.ok({data: data[0]});
+            });
+
+        }
+      ],
+      function (error) {
+        if (error) return res.serverError({message: error});
+      });
+
   }
 
 };

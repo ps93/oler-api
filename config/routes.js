@@ -49,6 +49,7 @@ module.exports.routes = {
   'POST /api/v1/login/email': {controller: 'UserController', action: 'login'},
   'POST /api/v1/access/social': {controller: 'UserController', action: 'social'},
   'POST /api/v1/set-password': {controller: 'UserController', action: 'setPassword'},
+  'GET /api/v1/logout/:id_user': {controller: 'UserController', action: 'logout'},
 
   // PROFILO
   'GET /api/v1/user/:id_user': {controller: 'UserController', action: 'myProfile'},

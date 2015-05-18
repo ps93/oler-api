@@ -35,17 +35,14 @@ module.exports.policies = {
    *                                                                          *
    ***************************************************************************/
 
-  RecommendedController: {
-    '*': 'checkIfUserCanUsePrivateApi'
-  },
-
   UserController: {
     '*': false,
     'login': 'checkIfUserCanUsePublicApi',
     'registrationWithEmail': 'checkIfUserCanUsePublicApi',
     'social': 'checkIfUserCanUsePublicApi',
     'setPassword': 'checkIfUserCanUsePublicApi',
-    'myProfile': 'checkIfUserCanUsePrivateApi'
+    'myProfile': 'checkIfUserCanUsePrivateApi',
+    'logout': 'checkIfUserCanUsePrivateApi'
   },
   ShareappController: {
     '*': 'checkIfUserCanUsePrivateApi'

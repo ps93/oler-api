@@ -54,6 +54,15 @@ module.exports = {
       User.MyProfile(res, params.id_user);
     }
     else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+  },
+
+  logout: function (req, res) {
+    var headers = req.headers;
+    var params = req.params;
+    if (params.id_user && headers.token) {
+      User.Logout(res, params.id_user, headers.token);
+    }
+    else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   }
 
 };
