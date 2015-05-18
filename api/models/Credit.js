@@ -213,7 +213,6 @@ module.exports = {
     var prepareRequest = [];
     var prepareData = [];
     var creditsData = [];
-    var creditsUpdated = [];
 
     async.series([
         // RICALCOLO DEL CREDITO DI TUTTI GLI UTENTI
@@ -226,8 +225,8 @@ module.exports = {
               else if (data.length > 0) {
                 for (var i = 0; i < data.length; i++) {
                   var updateCredit = HotelnetService.CalculateCredits(penalityAmount, data[i].percentage);
-                  prepareRequest.push({ id: data[i].id });
-                  prepareData.push({ credits: updateCredit, status: 'C'});
+                  prepareRequest.push({id: data[i].id});
+                  prepareData.push({credits: updateCredit, status: 'C'});
                 }
                 return callback();
               }
@@ -238,34 +237,34 @@ module.exports = {
         function (callback) {
           Credit
             .update(prepareRequest[0], prepareData[0])
-            .exec(function(error, data){
-              if(error) return callback(error);
-              else if(prepareRequest.length > 1) {
+            .exec(function (error, data) {
+              if (error) return callback(error);
+              else {
                 creditsData.push(data);
-                return callback();
+                if (prepareRequest.length > 1) return callback();
+                else return res.ok({data: creditsData});
               }
-              else return res.ok({data: data});
             });
         },
         // AGGIORNAMENTO DEL CREDITO RIGA 2
         function (callback) {
           Credit
             .update(prepareRequest[1], prepareData[1])
-            .exec(function(error, data){
-              if(error) return callback(error);
-              else if(prepareRequest.length > 2) {
+            .exec(function (error, data) {
+              if (error) return callback(error);
+              else {
                 creditsData.push(data);
-                return callback();
+                if (prepareRequest.length > 2) return callback();
+                else return res.ok({data: creditsData});
               }
-              else return res.ok({data: data});
             });
         },
         // AGGIORNAMENTO DEL CREDITO RIGA 3
         function (callback) {
           Credit
             .update(prepareRequest[2], prepareData[2])
-            .exec(function(error, data){
-              if(error) return callback(error);
+            .exec(function (error, data) {
+              if (error) return callback(error);
               else {
                 creditsData.push(data);
                 return res.ok({data: creditsData});

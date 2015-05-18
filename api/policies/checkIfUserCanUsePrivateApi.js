@@ -1,4 +1,4 @@
-// Specify a string key:    
+// Specify a string key:
 // Don't do this though, your keys should most likely be stored in env variables
 // and accessed via process.env.MY_SECRET_KEY
 var key = '88E82AB13D597D5A18E6EE61288CE';
