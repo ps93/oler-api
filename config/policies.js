@@ -61,6 +61,9 @@ module.exports.policies = {
   },
   CreditController: {
     '*': 'checkIfUserCanUsePrivateApi'
+  },
+  CreditUsedController: {
+    '*': 'checkIfUserCanUsePrivateApi'
   }
 
 };

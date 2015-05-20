@@ -107,7 +107,7 @@ module.exports = {
           });
       },
 
-      //CONTROLLA AMICO LIVELLO 2
+      // CONTROLLA AMICO LIVELLO 2
       function (callback) {
         if (firstLevelFound) {
           Friend
@@ -280,49 +280,218 @@ module.exports = {
     );
   },
 
+  // CREDITI GUADAGNATI SULLA PRENOTAZIONE DEI MIEI AMICI
   MyCredits: function (res, idUser) {
 
-    Credit
-      .find({
-        id_user: idUser,
-        level: {'!': "0"},
-        sort: 'reservation_date'
-      })
-      .populate('id_friend')
-      .populate('id_hotel')
-      .exec(function (error, data) {
-        if (error) return res.serverError({'message': error});
-        else return res.ok({data: data});
-      });
+    async.parallel([
+      // TUTTI I CREDITI
+      function (callback) {
+        Credit
+          .find({
+            id_user: idUser,
+            level: {'!': "0"},
+            sort: 'reservation_date'
+          })
+          .populate('id_friend')
+          .populate('id_hotel')
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else return callback(null, data);
+          });
+      },
+      // CREDITI UTILIZZATI
+      function (callback) {
+        CreditUsed
+          .find({id_user: idUser})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else return callback(null, data);
+          });
+      }
+    ], function (error, responses) {
+      if (error) return res.serverError({'message': error});
+      else {
+        var totalCredits = 0;
+        var creditsActual = 0;
+        var creditsPending = 0;
+        var creditsUsed = 0;
+        var credits = [];
+        var pending = [];
+
+        if (responses[0].length > 0) {
+          _.forEach(responses[0], function (item) {
+            totalCredits += item.credits;
+            if (item.reservation_date <= new Date()) {
+              credits.push(item);
+              creditsActual += item.credits;
+            }
+            else {
+              pending.push(item);
+              creditsPending += item.credits;
+            }
+          });
+        }
+        if (responses[1].length > 0) {
+          _.forEach(responses[1], function (item) {
+            creditsUsed += item.credit_used;
+          });
+          creditsActual -= creditsUsed;
+        }
+
+        return res.ok({
+          data: {
+            totalCredits: totalCredits,
+            creditsActual: creditsActual,
+            creditsPending: creditsPending,
+            creditsUsed: creditsUsed,
+            credits: credits,
+            pending: pending
+          }
+        });
+      }
+    });
+
   },
 
+  //CREDITI GUADAGNATI SULLE MIE PRENOTAZIONI
   MyReservationsCredits: function (res, idUser) {
 
-    Credit
-      .find({
-        id_user: idUser,
-        level: "0",
-        sort: 'reservation_date'
-      })
-      .populate('id_hotel')
-      .exec(function (error, data) {
-        if (error) return res.serverError({'message': error});
-        else return res.ok({data: data});
-      });
-  },
+    async.parallel([
+      // TUTTI I CREDITI
+      function (callback) {
+        Credit
+          .find({
+            id_user: idUser,
+            level: "0",
+            sort: 'reservation_date'
+          })
+          .populate('id_hotel')
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else return callback(null, data);
+          });
+      },
+      // CREDITI UTILIZZATI
+      function (callback) {
+        CreditUsed
+          .find({id_user: idUser})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else return callback(null, data);
+          });
+      }
+    ], function (error, responses) {
+      if (error) return res.serverError({'message': error});
+      else {
+        var totalCredits = 0;
+        var creditsActual = 0;
+        var creditsPending = 0;
+        var creditsUsed = 0;
+        var credits = [];
+        var pending = [];
 
+        if (responses[0].length > 0) {
+          _.forEach(responses[0], function (item) {
+            totalCredits += item.credits;
+            if (item.reservation_date <= new Date()) {
+              credits.push(item);
+              creditsActual += item.credits;
+            }
+            else {
+              pending.push(item);
+              creditsPending += item.credits;
+            }
+          });
+        }
+        if (responses[1].length > 0) {
+          _.forEach(responses[1], function (item) {
+            creditsUsed += item.credit_used;
+          });
+          creditsActual -= creditsUsed;
+        }
+
+        return res.ok({
+          data: {
+            totalCredits: totalCredits,
+            creditsActual: creditsActual,
+            creditsPending: creditsPending,
+            creditsUsed: creditsUsed,
+            credits: credits,
+            pending: pending
+          }
+        });
+      }
+    });
+
+  },
 
   AllCredits: function (res, idUser) {
 
-    Credit
-      .find({
-        id_user: idUser,
-        sort: 'reservation_date'
-      })
-      .exec(function (error, data) {
-        if (error) return res.serverError({'message': error});
-        else return res.ok({data: data});
-      });
+    async.parallel([
+      // TUTTI I CREDITI
+      function (callback) {
+        Credit
+          .find({
+            id_user: idUser,
+            sort: 'reservation_date'
+          })
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else return callback(null, data);
+          });
+      },
+      // CREDITI UTILIZZATI
+      function (callback) {
+        CreditUsed
+          .find({id_user: idUser})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else return callback(null, data);
+          });
+      }
+    ], function (error, responses) {
+      if (error) return res.serverError({'message': error});
+      else {
+        var totalCredits = 0;
+        var creditsActual = 0;
+        var creditsPending = 0;
+        var creditsUsed = 0;
+        var credits = [];
+        var pending = [];
+
+        if (responses[0].length > 0) {
+          _.forEach(responses[0], function (item) {
+            totalCredits += item.credits;
+            if (item.reservation_date <= new Date()) {
+              credits.push(item);
+              creditsActual += item.credits;
+            }
+            else {
+              pending.push(item);
+              creditsPending += item.credits;
+            }
+          });
+        }
+        if (responses[1].length > 0) {
+          _.forEach(responses[1], function (item) {
+            creditsUsed += item.credit_used;
+          });
+          creditsActual -= creditsUsed;
+        }
+
+        return res.ok({
+          data: {
+            totalCredits: totalCredits,
+            creditsActual: creditsActual,
+            creditsPending: creditsPending,
+            creditsUsed: creditsUsed,
+            credits: credits,
+            pending: pending
+          }
+        });
+      }
+    });
+
   }
 
 };
