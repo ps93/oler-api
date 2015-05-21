@@ -315,18 +315,20 @@ module.exports = {
         var creditsActual = 0;
         var creditsPending = 0;
         var creditsUsed = 0;
-        var credits = [];
-        var pending = [];
+        var reservations = [];
 
         if (responses[0].length > 0) {
           _.forEach(responses[0], function (item) {
             totalCredits += item.credits;
-            if (item.reservation_date <= new Date()) {
-              credits.push(item);
+            if (item.reservation_date
+              && new Date(item.reservation_date).setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0)) {
+              item.hasCredits = true;
+              reservations.push(item);
               creditsActual += item.credits;
             }
             else {
-              pending.push(item);
+              item.hasCredits = false;
+              reservations.push(item);
               creditsPending += item.credits;
             }
           });
@@ -344,8 +346,7 @@ module.exports = {
             creditsActual: creditsActual,
             creditsPending: creditsPending,
             creditsUsed: creditsUsed,
-            credits: credits,
-            pending: pending
+            reservations: reservations
           }
         });
       }
@@ -387,18 +388,20 @@ module.exports = {
         var creditsActual = 0;
         var creditsPending = 0;
         var creditsUsed = 0;
-        var credits = [];
-        var pending = [];
+        var reservations = [];
 
         if (responses[0].length > 0) {
           _.forEach(responses[0], function (item) {
             totalCredits += item.credits;
-            if (item.reservation_date <= new Date()) {
-              credits.push(item);
+            if (item.reservation_date
+              && new Date(item.reservation_date).setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0)) {
+              reservations.hasCredits = true;
+              reservations.push(item);
               creditsActual += item.credits;
             }
             else {
-              pending.push(item);
+              reservations.hasCredits = false;
+              reservations.push(item);
               creditsPending += item.credits;
             }
           });
@@ -416,8 +419,7 @@ module.exports = {
             creditsActual: creditsActual,
             creditsPending: creditsPending,
             creditsUsed: creditsUsed,
-            credits: credits,
-            pending: pending
+            reservations: reservations
           }
         });
       }
@@ -456,18 +458,20 @@ module.exports = {
         var creditsActual = 0;
         var creditsPending = 0;
         var creditsUsed = 0;
-        var credits = [];
-        var pending = [];
+        var reservations = [];
 
         if (responses[0].length > 0) {
           _.forEach(responses[0], function (item) {
             totalCredits += item.credits;
-            if (item.reservation_date <= new Date()) {
-              credits.push(item);
+            if (item.reservation_date
+              && new Date(item.reservation_date).setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0)) {
+              reservations.hasCredits = true;
+              reservations.push(item);
               creditsActual += item.credits;
             }
             else {
-              pending.push(item);
+              reservations.hasCredits = false;
+              reservations.push(item);
               creditsPending += item.credits;
             }
           });
@@ -485,8 +489,7 @@ module.exports = {
             creditsActual: creditsActual,
             creditsPending: creditsPending,
             creditsUsed: creditsUsed,
-            credits: credits,
-            pending: pending
+            reservations: reservations
           }
         });
       }
