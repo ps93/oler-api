@@ -14,8 +14,12 @@ module.exports = {
       && params.id_hotel && params.id_hotel.trim()
       && params.id_reservation && params.id_reservation.trim()
       && _.isNumber(params.total_reservation)
-      && _.isDate(params.reservation_date)
-      && params.currency && params.currency.trim()) {
+      && _.isNumber(params.total_paid)
+      && _.isNumber(params.credit_used)
+      && params.total_paid > 0
+      && params.reservation_date
+      && params.currency && params.currency.trim()
+      && params.hasOwnProperty('useCredit')) {
 
       Credit.InsertCredit(
         res,
@@ -23,6 +27,8 @@ module.exports = {
         params.id_hotel.trim(),
         params.id_reservation.trim(),
         params.total_reservation,
+        params.total_paid,
+        params.credit_used,
         params.reservation_date,
         params.currency.trim()
       );

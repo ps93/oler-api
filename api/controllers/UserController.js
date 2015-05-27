@@ -10,12 +10,11 @@ module.exports = {
   registrationWithEmail: function (req, res) {
     var params = req.body;
 
-    if (params.email
-      && params.password
-      && params.firstname
-      && params.lastname
-      && params.access
-      && params.access === 'email') {
+    if (params.email && params.email.trim()
+      && params.password && params.password.trim()
+      && params.firstname && params.firstname.trim()
+      && params.lastname && params.lastname.trim()
+      && params.access && params.access === 'email') {
       User.RegistrationWithEmail(res, params);
     }
     else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
@@ -23,7 +22,7 @@ module.exports = {
 
   login: function (req, res) {
     var params = req.body;
-    if (params.email && params.password) {
+    if (params.email && params.email.trim() && params.password && params.password.trim()) {
       User.LoginWithEmail(res, params.email, params.password);
     }
     else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
@@ -31,9 +30,9 @@ module.exports = {
 
   social: function (req, res) {
     var params = req.body;
-    if (params.email
-      && params.firstname
-      && params.lastname
+    if (params.email && params.email.trim()
+      && params.firstname && params.firstname.trim()
+      && params.lastname && params.lastname.trim()
       && (params.access === 'facebook' || params.access === 'google')) {
       User.LoginOrRegistrationWithSocial(res, params);
     }
@@ -42,7 +41,7 @@ module.exports = {
 
   setPassword: function (req, res) {
     var params = req.body;
-    if (params && params.email) {
+    if (params.email && params.email.trim()) {
       User.SetPassword(res, params.email);
     }
     else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
@@ -50,7 +49,7 @@ module.exports = {
 
   myProfile: function (req, res) {
     var params = req.params;
-    if (params.id_user) {
+    if (params.id_user && params.id_user.trim()) {
       User.MyProfile(res, params.id_user);
     }
     else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
@@ -59,7 +58,8 @@ module.exports = {
   logout: function (req, res) {
     var headers = req.headers;
     var params = req.params;
-    if (params.id_user && headers.token) {
+    if (params.id_user && params.id_user.trim()
+      && headers.token && headers.token.trim()) {
       User.Logout(res, params.id_user, headers.token);
     }
     else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});

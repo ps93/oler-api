@@ -28,7 +28,7 @@ module.exports = {
   },
 
   CalculateCredits: function (total, percentage) {
-    return (total * percentage) / 100;
+    return ((total * percentage) / 100).toFixed(2);
   }
 
 };

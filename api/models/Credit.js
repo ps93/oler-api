@@ -30,6 +30,10 @@ module.exports = {
       type: 'float',
       required: true
     },
+    total_paid: {
+      type: 'float',
+      required: true
+    },
     reservation_date: {
       type: 'date',
       required: true
@@ -72,7 +76,7 @@ module.exports = {
     }
   },
 
-  InsertCredit: function (res, idUser, idHotel, idReservation, totalReservation, reservationDate, currency) {
+  InsertCredit: function (res, idUser, idHotel, idReservation, totalReservation, totalPaid, creditUsed, reservationDate, currency) {
 
     var prepareParams = [];
     var firstLevelFound = false;
@@ -87,13 +91,14 @@ module.exports = {
           .exec(function (error, data) {
             if (error) return callback(error);
             else if (data) {
-              var getCredit = HotelnetService.CalculateCredits(totalReservation, 2);
+              var getCredit = HotelnetService.CalculateCredits(totalPaid, 2);
               prepareParams.push({
                 id_user: data.id_user.id,
                 id_friend: idUser,
                 id_hotel: idHotel,
                 id_reservation: idReservation,
                 total_reservation: totalReservation,
+                total_paid: totalPaid,
                 reservation_date: reservationDate,
                 currency: currency,
                 level: 1,
@@ -116,13 +121,14 @@ module.exports = {
             .exec(function (error, data) {
               if (error) return callback(error);
               else if (data) {
-                var getCredit = HotelnetService.CalculateCredits(totalReservation, 1);
+                var getCredit = HotelnetService.CalculateCredits(totalPaid, 1);
                 prepareParams.push({
                   id_user: data.id_user.id,
                   id_friend: idUser,
                   id_hotel: idHotel,
                   id_reservation: idReservation,
                   total_reservation: totalReservation,
+                  total_paid: totalPaid,
                   reservation_date: reservationDate,
                   currency: currency,
                   level: 2,
@@ -141,7 +147,7 @@ module.exports = {
       // SALVA IL CREDITO DELL'UTENTE CHE HA FATTO LA PRENOTAZIONE
       function (callback) {
 
-        var getCredit = HotelnetService.CalculateCredits(totalReservation, 2);
+        var getCredit = HotelnetService.CalculateCredits(totalPaid, 2);
 
         Credit
           .findOrCreate({
@@ -156,6 +162,7 @@ module.exports = {
             id_hotel: idHotel,
             id_reservation: idReservation,
             total_reservation: totalReservation,
+            total_paid: totalPaid,
             reservation_date: reservationDate,
             currency: currency,
             level: 0,
@@ -165,6 +172,7 @@ module.exports = {
           .exec(function (error, data) {
             if (error) return callback(error);
             else if (firstLevelFound) return callback();
+            else if (!firstLevelFound && creditUsed > 0) CreditUsed.InsertCreditUsed(res, idUser, idReservation, creditUsed);
             else return res.ok({message: 'Registrato utente che ha guadagnato i punti.'});
           });
 
@@ -183,6 +191,7 @@ module.exports = {
           .exec(function (error, data) {
             if (error) return callback(error);
             else if (secondLevelFound) return callback();
+            else if (!secondLevelFound && creditUsed > 0) CreditUsed.InsertCreditUsed(res, idUser, idReservation, creditUsed);
             else return res.ok({message: 'Registrato utente che ha guadagnato i punti.'});
           });
       },
@@ -199,6 +208,7 @@ module.exports = {
           }, prepareParams[1])
           .exec(function (error, data) {
             if (error) return callback(error);
+            else if (creditUsed > 0) CreditUsed.InsertCreditUsed(res, idUser, idReservation, creditUsed);
             else return res.ok({message: 'Registrato gli utenti che hanno guadagnato i punti.'});
           });
       }
