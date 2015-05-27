@@ -83,6 +83,22 @@ module.exports = {
     var secondLevelFound = false;
 
     async.series([
+
+      // CONTROLLA CHE L'UTENTE ABBIA A DISPOSIZIONE I CREDITI
+      // CHE STA USANDO NELLA PRENOTAZIONE
+      function (callback) {
+        if (creditUsed > 0) {
+          HotelnetService
+            .CheckIfUserCanUseCredits(idUser,
+            function (error, creditCanUse) {
+              if (error) return res.serverError({'message': error});
+              else if (creditCanUse >= creditUsed) return callback();
+              else return res.status(401).json({message: 'I crediti che vuoi usare non sono disponibili'});
+            });
+        }
+        else return callback();
+      },
+
       // CONTROLLA AMICO LIVELLO 1
       function (callback) {
         Friend
@@ -215,6 +231,7 @@ module.exports = {
     ], function (error) {
       if (error) return res.serverError({'message': error});
     });
+
   },
 
   UpdateCredits: function (res, reservationId, penalityAmount) {

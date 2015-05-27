@@ -18,8 +18,7 @@ module.exports = {
       && _.isNumber(params.credit_used)
       && params.total_paid > 0
       && params.reservation_date
-      && params.currency && params.currency.trim()
-      && params.hasOwnProperty('useCredit')) {
+      && params.currency && params.currency.trim()) {
 
       Credit.InsertCredit(
         res,

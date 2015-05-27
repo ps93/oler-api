@@ -41,8 +41,16 @@ module.exports = {
       .create(prepareInsert)
       .exec(function (error) {
         if (error) return res.serverError({message: error});
-        else return res.ok({data: user});
+        else {
+          HotelnetService
+            .FriendsSync(prepareInsert[0].id_user, prepareInsert[0].id_friend,
+            function (error, data) {
+              if (error) return res.ok({data: user, error: error});
+              else return res.ok({data: user, hn: data});
+            })
+        }
       });
+
   },
 
   MyFriends: function (res, idUser) {
