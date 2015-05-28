@@ -81,6 +81,7 @@ module.exports = {
     var prepareParams = [];
     var firstLevelFound = false;
     var secondLevelFound = false;
+    var usersAmounts = [];
 
     async.series([
 
@@ -121,6 +122,13 @@ module.exports = {
                 percentage: 2,
                 credits: getCredit
               });
+
+              usersAmounts.push({
+                user_id: data.id_user.id,
+                user_level: 1,
+                amount: getCredit
+              });
+
               firstLevelFound = true;
               return callback();
             }
@@ -151,6 +159,13 @@ module.exports = {
                   percentage: 1,
                   credits: getCredit
                 });
+
+                usersAmounts.push({
+                  user_id: data.id_user.id,
+                  user_level: 2,
+                  amount: getCredit
+                });
+
                 secondLevelFound = true;
                 return callback();
               }
@@ -164,6 +179,12 @@ module.exports = {
       function (callback) {
 
         var getCredit = HotelnetService.CalculateCredits(totalPaid, 2);
+
+        usersAmounts.push({
+          user_id: idUser,
+          user_level: 0,
+          amount: getCredit
+        });
 
         Credit
           .findOrCreate({
@@ -188,8 +209,15 @@ module.exports = {
           .exec(function (error, data) {
             if (error) return callback(error);
             else if (firstLevelFound) return callback();
-            else if (!firstLevelFound && creditUsed > 0) CreditUsed.InsertCreditUsed(res, idUser, idReservation, creditUsed);
-            else return res.ok({message: 'Registrato utente che ha guadagnato i punti.'});
+            else if (!firstLevelFound && creditUsed > 0) CreditUsed.InsertCreditUsed(res, idUser, idReservation, creditUsed, usersAmounts);
+            else {
+              HotelnetService
+                .CreditsSync(usersAmounts, idReservation, 
+                function(error, response){
+                  if(error) res.ok({message: 'Registrato utente che ha guadagnato i punti.', error: error});
+                  else return res.ok({message: 'Registrato utente che ha guadagnato i punti.', usersAmounts: usersAmounts, response: response});
+                });
+            }
           });
 
       },
@@ -207,8 +235,15 @@ module.exports = {
           .exec(function (error, data) {
             if (error) return callback(error);
             else if (secondLevelFound) return callback();
-            else if (!secondLevelFound && creditUsed > 0) CreditUsed.InsertCreditUsed(res, idUser, idReservation, creditUsed);
-            else return res.ok({message: 'Registrato utente che ha guadagnato i punti.'});
+            else if (!secondLevelFound && creditUsed > 0) CreditUsed.InsertCreditUsed(res, idUser, idReservation, creditUsed, usersAmounts);
+            else {
+              HotelnetService
+                .CreditsSync(usersAmounts, idReservation, 
+                function(error, response){
+                  if(error) res.ok({message: 'Registrato utente che ha guadagnato i punti.', error: error});
+                  else return res.ok({message: 'Registrato utente che ha guadagnato i punti.', usersAmounts: usersAmounts, response: response});
+                });
+            }
           });
       },
 
@@ -224,8 +259,15 @@ module.exports = {
           }, prepareParams[1])
           .exec(function (error, data) {
             if (error) return callback(error);
-            else if (creditUsed > 0) CreditUsed.InsertCreditUsed(res, idUser, idReservation, creditUsed);
-            else return res.ok({message: 'Registrato gli utenti che hanno guadagnato i punti.'});
+            else if (creditUsed > 0) CreditUsed.InsertCreditUsed(res, idUser, idReservation, creditUsed, usersAmounts);
+            else {
+              HotelnetService
+                .CreditsSync(usersAmounts, idReservation, 
+                function(error, response){
+                  if(error) res.ok({message: 'Registrato utente che ha guadagnato i punti.', error: error});
+                  else return res.ok({message: 'Registrato utente che ha guadagnato i punti.', usersAmounts: usersAmounts, response: response});
+                });
+            }
           });
       }
     ], function (error) {

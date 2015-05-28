@@ -24,22 +24,35 @@ module.exports = {
     }
   },
 
-  InsertCreditUsed: function (res, idUser, idReservation, creditUsed) {
+  InsertCreditUsed: function (res, idUser, idReservation, creditUsed, usersAmounts) {
 
-    CreditUsed
-      .findOrCreate({
-        id_user: idUser,
-        id_reservation: idReservation
-      }, {
-        id_user: idUser,
-        id_reservation: idReservation,
-        credit_used: creditUsed
-      })
-      .exec(function (error, data) {
+    async.series([
+
+      // REGISTRA IL CREDITO UTILIZZATO
+      function(callback){
+        CreditUsed
+          .findOrCreate({id_user: idUser, id_reservation: idReservation}, 
+                       {id_user: idUser, id_reservation: idReservation, credit_used: creditUsed})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else if(usersAmounts && usersAmounts.length > 0) return callback(); 
+            else return res.ok({data: data, usersAmounts: usersAmounts || []});
+          });
+      },
+
+      // SINCRONIZZA CREDITI WEBSERVICES HOTELNET
+      function(callback){
+        HotelnetService
+          .CreditsSync(usersAmounts, idReservation, 
+          function(error, response){
+            if(error) res.ok({message: 'Registrato utente che ha guadagnato i punti.', error: error});
+            else return res.ok({message: 'Registrato utente che ha guadagnato i punti.', usersAmounts: usersAmounts, response: response});
+          });
+      }
+
+      ], function(error){
         if (error) return res.serverError({'message': error});
-        else return res.ok({data: data});
       });
-
   }
 
 };

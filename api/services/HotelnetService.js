@@ -64,8 +64,47 @@ module.exports = {
     request.end();
   },
 
+  CreditsSync: function(usersAmounts, reservationCode, callback){
+    var requestPrepared = JSON.stringify({
+      'channel_code': '0202',
+      // ARRAY DI UTENTI CON I RISPETTVI CREDITI
+      'users_amounts': usersAmounts,
+      'reservation_type': '0',
+      'reservation_code': reservationCode
+    });
+
+    var options = {
+      hostname: 'webservice.hotelnet.biz',
+      path: '/ws/Hotelnet.Services/api/booking_credits',
+      port: 443,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': requestPrepared.length
+      }
+    };
+
+    console.log(requestPrepared);
+
+    var request = https.request(options, function (response) {
+      response.setEncoding('utf8');
+      response.on('data', function (chunk) {
+        var dataFromApi = JSON.parse(chunk);
+        if(dataFromApi && dataFromApi.credits_confirmed) return callback(null, dataFromApi);
+        return callback(dataFromApi);
+      });
+    });
+
+    request.on('error', function (e) {
+      return callback(e);
+    });
+
+    request.write(requestPrepared);
+    request.end();
+  },
+
   CalculateCredits: function (total, percentage) {
-    return (total * percentage) / 100;
+    return (Math.round(total * percentage) / 100);
   },
 
   CheckIfUserCanUseCredits: function (idUser, callbackMain) {
