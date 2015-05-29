@@ -16,21 +16,23 @@ module.exports = {
       && _.isNumber(params.total_reservation)
       && _.isNumber(params.total_paid)
       && _.isNumber(params.credit_used)
-      && params.total_paid > 0
       && params.reservation_date
       && params.currency && params.currency.trim()) {
 
-      Credit.InsertCredit(
-        res,
-        params.id_user.trim(),
-        params.id_hotel.trim(),
-        params.id_reservation.trim(),
-        params.total_reservation,
-        params.total_paid,
-        params.credit_used,
-        params.reservation_date,
-        params.currency.trim()
-      );
+      if(params.total_paid > 0){
+        Credit.InsertCredit(
+          res,
+          params.id_user.trim(),
+          params.id_hotel.trim(),
+          params.id_reservation.trim(),
+          params.total_reservation,
+          params.total_paid,
+          params.credit_used,
+          params.reservation_date,
+          params.currency.trim()
+        );
+    }
+    else CreditUsed.InsertCreditUsed(res, params.id_user.trim(), params.id_reservation.trim(), params.credit_used);
 
     }
 
