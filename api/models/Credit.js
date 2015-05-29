@@ -212,10 +212,14 @@ module.exports = {
             else if (!firstLevelFound && creditUsed > 0) CreditUsed.InsertCreditUsed(res, idUser, idReservation, creditUsed, usersAmounts);
             else {
               HotelnetService
-                .CreditsSync(usersAmounts, idReservation, 
-                function(error, response){
-                  if(error) res.ok({message: 'Registrato utente che ha guadagnato i punti.', error: error});
-                  else return res.ok({message: 'Registrato utente che ha guadagnato i punti.', usersAmounts: usersAmounts, response: response});
+                .CreditsSync(usersAmounts, idReservation,
+                function (error, response) {
+                  if (error) res.ok({message: 'Registrato utente che ha guadagnato i punti.', error: error});
+                  else return res.ok({
+                    message: 'Registrato utente che ha guadagnato i punti.',
+                    usersAmounts: usersAmounts,
+                    response: response
+                  });
                 });
             }
           });
@@ -238,10 +242,14 @@ module.exports = {
             else if (!secondLevelFound && creditUsed > 0) CreditUsed.InsertCreditUsed(res, idUser, idReservation, creditUsed, usersAmounts);
             else {
               HotelnetService
-                .CreditsSync(usersAmounts, idReservation, 
-                function(error, response){
-                  if(error) res.ok({message: 'Registrato utente che ha guadagnato i punti.', error: error});
-                  else return res.ok({message: 'Registrato utente che ha guadagnato i punti.', usersAmounts: usersAmounts, response: response});
+                .CreditsSync(usersAmounts, idReservation,
+                function (error, response) {
+                  if (error) res.ok({message: 'Registrato utente che ha guadagnato i punti.', error: error});
+                  else return res.ok({
+                    message: 'Registrato utente che ha guadagnato i punti.',
+                    usersAmounts: usersAmounts,
+                    response: response
+                  });
                 });
             }
           });
@@ -262,10 +270,14 @@ module.exports = {
             else if (creditUsed > 0) CreditUsed.InsertCreditUsed(res, idUser, idReservation, creditUsed, usersAmounts);
             else {
               HotelnetService
-                .CreditsSync(usersAmounts, idReservation, 
-                function(error, response){
-                  if(error) res.ok({message: 'Registrato utente che ha guadagnato i punti.', error: error});
-                  else return res.ok({message: 'Registrato utente che ha guadagnato i punti.', usersAmounts: usersAmounts, response: response});
+                .CreditsSync(usersAmounts, idReservation,
+                function (error, response) {
+                  if (error) res.ok({message: 'Registrato utente che ha guadagnato i punti.', error: error});
+                  else return res.ok({
+                    message: 'Registrato utente che ha guadagnato i punti.',
+                    usersAmounts: usersAmounts,
+                    response: response
+                  });
                 });
             }
           });
@@ -389,8 +401,7 @@ module.exports = {
         if (responses[0].length > 0) {
           _.forEach(responses[0], function (item) {
             totalCredits += item.credits;
-            if (item.reservation_date
-              && new Date(item.reservation_date).setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0)) {
+            if (item.reservation_date && new Date(item.reservation_date) < new Date()) {
               item.hasCredits = true;
               reservations.push(item);
               creditsActual += item.credits;
@@ -462,8 +473,7 @@ module.exports = {
         if (responses[0].length > 0) {
           _.forEach(responses[0], function (item) {
             totalCredits += item.credits;
-            if (item.reservation_date
-              && new Date(item.reservation_date).setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0)) {
+            if (item.reservation_date && new Date(item.reservation_date) < new Date()) {
               reservations.hasCredits = true;
               reservations.push(item);
               creditsActual += item.credits;
@@ -533,7 +543,7 @@ module.exports = {
           _.forEach(responses[0], function (item) {
             totalCredits += item.credits;
             if (item.reservation_date
-              && new Date(item.reservation_date).setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0)) {
+              && new Date(item.reservation_date) < new Date()) {
               reservations.hasCredits = true;
               reservations.push(item);
               creditsActual += item.credits;
