@@ -401,7 +401,8 @@ module.exports = {
         if (responses[0].length > 0) {
           _.forEach(responses[0], function (item) {
             totalCredits += item.credits;
-            if (item.reservation_date && new Date(item.reservation_date) < new Date()) {
+            if (item.reservation_date 
+              && (new Date(item.reservation_date).setHours(0,0,0,0) > new Date().setHours(0,0,0,0))) {
               item.hasCredits = true;
               reservations.push(item);
               creditsActual += item.credits;
@@ -473,7 +474,8 @@ module.exports = {
         if (responses[0].length > 0) {
           _.forEach(responses[0], function (item) {
             totalCredits += item.credits;
-            if (item.reservation_date && new Date(item.reservation_date) < new Date()) {
+            if (item.reservation_date 
+              && (new Date(item.reservation_date).setHours(0,0,0,0) > new Date().setHours(0,0,0,0))) {
               reservations.hasCredits = true;
               reservations.push(item);
               creditsActual += item.credits;
@@ -542,8 +544,8 @@ module.exports = {
         if (responses[0].length > 0) {
           _.forEach(responses[0], function (item) {
             totalCredits += item.credits;
-            if (item.reservation_date
-              && new Date(item.reservation_date) < new Date()) {
+            if (item.reservation_date 
+              && (new Date(item.reservation_date).setHours(0,0,0,0) > new Date().setHours(0,0,0,0))) {
               reservations.hasCredits = true;
               reservations.push(item);
               creditsActual += item.credits;
