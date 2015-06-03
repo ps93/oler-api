@@ -63,6 +63,7 @@ module.exports.routes = {
   // AMICI
   'GET /api/v1/friends/:id_user': {controller: 'FriendController', action: 'myFriends'},
   'GET /api/v1/friends/:id_user/:id_friend': {controller: 'FriendController', action: 'addFakeFriend'},
+  'POST /api/v1/friends': {controller: 'FriendController', action: 'addFriendOnRequest'},
   'DELETE /api/v1/friends/:id_user/:id_friend': {controller: 'FriendController', action: 'removeFakeFriend'},
 
   // HOTEL PREFERITI

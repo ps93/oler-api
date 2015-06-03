@@ -25,7 +25,7 @@ module.exports = {
 
     var prepareInsertDocs = [];
     var contactsNotRegistered = [];
-    var userRegistered = [];
+    var fullname;
 
     async.series([
         //****************************************************************//
@@ -51,6 +51,7 @@ module.exports = {
                 return callback();
               }
             });
+
         },
         //****************************************************************//
         //* 2. ELIMINA DALL'INSERIMENTO GLI UTENTI CON CUI HO            *//
@@ -89,6 +90,17 @@ module.exports = {
           }
           else return res.status(401).json({message: 'I contatti selezionati sono già registrati.'});
         },
+        function (callback) {
+          User
+            .findOne({id: idUser})
+            .exec(function (error, data) {
+              if (error) return callback(error);
+              else {
+                fullname = data.firstname + ' ' + data.lastname;
+                return callback();
+              }
+            });
+        },
         //****************************************************************//
         //* 3. INSERIMENTO E/O INVIO EMAIL AI CONTATTI SELEZIONATI       *//
         //****************************************************************//
@@ -101,10 +113,10 @@ module.exports = {
               .create(prepareInsertDocs)
               .exec(function (error, data) {
                 if (error) return callback(error);
-                else EmailService.ShareAppWithContacts(res, emailContacts);
+                else EmailService.ShareAppWithContacts(res, emailContacts, fullname);
               });
           }
-          else EmailService.ShareAppWithContacts(res, emailContacts);
+          else EmailService.ShareAppWithContacts(res, emailContacts, fullname);
         }
       ],
       function (error) {

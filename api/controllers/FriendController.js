@@ -35,6 +35,19 @@ module.exports = {
       Friend.RemoveFakeFriend(res, params.id_user, params.id_friend);
     }
     else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+
+  },
+
+  addFriendOnRequest: function (req, res) {
+
+    var params = req.body;
+
+    if (params.id_user && params.contacts && _.isArray(params.contacts) && params.contacts.length > 0) {
+      var contacts = ValidationService.ValidationTrim(params.contacts, 'email');
+      Friend.AddFriendOnRequest(res, params.id_user, contacts);
+    }
+    else res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+
   }
 
 };

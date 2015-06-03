@@ -132,7 +132,7 @@ module.exports = {
           .exec(function (error, data) {
             if (error) return callback(error);
             else if (data.length > 0) return res.ok({data: data});
-            else return res.status(401).json({message: ''});
+            else return res.status(401).json({message: 'L\'utente non è stato trovato!'});
           });
       }
     ], function (error, responses) {
@@ -142,28 +142,144 @@ module.exports = {
   },
 
   RemoveFakeFriend: function (res, idUser, idFriend) {
+    var userFound;
+
     async.series([
       function (callback) {
+
         Friend
-          .update({id_user: idUser, id_friend: idFriend}, {are_friends: false})
+          .findOne([
+            {or: [{id_user: idUser, id_friend: idFriend}]},
+            {or: [{id_user: idFriend, id_friend: idUser}]}
+          ])
           .exec(function (error, data) {
             if (error) return callback(error);
-            else if (data.length > 0) return res.ok({data: data});
-            else return callback();
+            else if (!_.isEmpty(data)) {
+              userFound = data;
+              return callback();
+            }
+            else return res.status(401).json({message: 'L\'utente non è stato trovato!'});
           });
       },
+
+      function (callback) {
+        if (!userFound.can_earn_credits) {
+          Friend
+            .destroy({id: userFound.id})
+            .exec(function (error, data) {
+              if (error) return callback(error);
+              else return res.ok({data: data});
+            });
+        }
+        else return callback();
+      },
+
       function (callback) {
         Friend
-          .update({id_user: idFriend, id_friend: idUser}, {are_friends: false})
+          .update({id: userFound.id}, {are_friends: false})
           .exec(function (error, data) {
             if (error) return callback(error);
-            else if (data.length > 0) return res.ok({data: data});
-            else return res.status(401).json({message: ''});
+            else return res.ok({data: data});
           });
       }
     ], function (error, responses) {
       if (error) return res.serverError({message: error});
     });
+  },
+
+  AddFriendOnRequest: function (res, idUser, contacts) {
+
+    var checkIfUserhasFriend_A = [];
+    var checkIfUserhasFriend_B = [];
+    var tempUsers = [];
+    var prepareInsert = [];
+
+    async.series([
+
+      //****************************************************************//
+      //* 1. CONTROLLA CHE GLI UTENTI       *//
+      //****************************************************************//
+      function (callback) {
+
+        var emailContacts = _.map(contacts, 'email');
+
+        User
+          .find({email: emailContacts})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else if (data.length > 0) {
+              for (var i = 0; i < data.length; i++) {
+                checkIfUserhasFriend_A.push({
+                  id_user: idUser,
+                  id_friend: data[i].id
+                });
+                checkIfUserhasFriend_B.push({
+                  id_user: data[i].id,
+                  id_friend: idUser
+                });
+                tempUsers.push({
+                  id_user: idUser,
+                  id_friend: data[i].id
+                });
+              }
+              return callback();
+            }
+            else res.status(401).json({message: 'Gli utenti selezionati non sono ancora registrati!'})
+          });
+      },
+
+      function (callback) {
+        Friend
+          .find([{or: checkIfUserhasFriend_A}, {or: checkIfUserhasFriend_B}])
+          .exec(function (error, data) {
+
+            if (error) return callback(error);
+
+            else if (data.length > 0) {
+              _.forEach(tempUsers, function (item) {
+                if ((_.where(data, {id_user: item.id_user, id_friend: item.id_friend})).length === 0
+                  && (_.where(data, {id_user: item.id_friend, id_friend: item.id_user})).length === 0) {
+                  prepareInsert.push({
+                    id_user: idUser,
+                    id_friend: (item.id_user === idUser) ? item.id_friend : item.id_user,
+                    are_friends: true
+                  });
+                }
+              });
+              return callback();
+            }
+
+            else {
+              _.forEach(tempUsers, function (item) {
+                prepareInsert.push({
+                  id_user: idUser,
+                  id_friend: item.id_friend,
+                  are_friends: true
+                });
+              });
+
+              return callback();
+            }
+          });
+      },
+
+      function (callback) {
+
+        if (prepareInsert.length > 0) {
+          Friend
+            .create(prepareInsert)
+            .exec(function (error, data) {
+              if (error) return res.serverError({message: error});
+              else return res.ok({data: data});
+            });
+        }
+        else return res.status(401).json({message: 'Gli utenti che hai selezionato sono già tra i tuoi amici!'})
+
+      }
+    ], function (error) {
+      if (error) return res.serverError({message: error});
+    });
+
   }
 
 };
