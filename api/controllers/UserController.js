@@ -63,6 +63,33 @@ module.exports = {
       User.Logout(res, params.id_user, headers.token);
     }
     else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+  },
+
+  editProfile: function (req, res) {
+    var paramsFromUrl = req.params;
+    var params = req.body;
+
+    if (paramsFromUrl.id_user
+      && params.firstname && params.firstname.trim()
+      && params.lastname && params.lastname.trim()
+      && params.hasOwnProperty('phone')
+      && params.hasOwnProperty('street_address')
+      && params.hasOwnProperty('city')
+      && params.hasOwnProperty('zipcode')
+      && params.hasOwnProperty('country')) {
+
+      User.EditProfile(res,
+        paramsFromUrl.id_user,
+        params.firstname,
+        params.lastname,
+        params.phone,
+        params.street_address,
+        params.city,
+        params.zipcode,
+        params.country);
+
+    }
+    else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   }
 
 };

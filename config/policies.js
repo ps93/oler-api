@@ -42,7 +42,8 @@ module.exports.policies = {
     'social': 'checkIfUserCanUsePublicApi',
     'setPassword': 'checkIfUserCanUsePublicApi',
     'myProfile': 'checkIfUserCanUsePrivateApi',
-    'logout': 'checkIfUserCanUsePrivateApi'
+    'logout': 'checkIfUserCanUsePrivateApi',
+    'editProfile': 'checkIfUserCanUsePrivateApi'
   },
   ShareappController: {
     '*': 'checkIfUserCanUsePrivateApi'

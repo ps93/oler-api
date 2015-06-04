@@ -53,6 +53,7 @@ module.exports.routes = {
 
   // PROFILO
   'GET /api/v1/user/:id_user': {controller: 'UserController', action: 'myProfile'},
+  'PUT /api/v1/user/:id_user': {controller: 'UserController', action: 'editProfile'},
 
   // CONDIVISIONE DELL'APP
   'POST /api/v1/shareapp': {controller: 'ShareappController', action: 'insert'},

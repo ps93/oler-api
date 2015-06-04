@@ -36,8 +36,13 @@ module.exports = {
       enum: ['facebook', 'google', 'email'],
       required: true
     },
-    token:  'array',
+    token: 'array',
     image: 'string',
+    phone: 'string',
+    street_address: 'string',
+    city: 'string',
+    zipcode: 'string',
+    country: 'string',
     toJSON: function () {
       var obj = this.toObject();
       obj.fullname = obj.firstname + ' ' + obj.lastname;
@@ -332,6 +337,46 @@ module.exports = {
       function (error) {
         if (error) return res.serverError({message: error});
       });
+
+  },
+
+  EditProfile: function (res, idUser, firstname, lastname, phone, street_address, city, zipcode, country) {
+
+    async
+      .series([
+
+        function (callback) {
+          User
+            .findOne({id: idUser})
+            .exec(function (error, data) {
+              if (error) return callback(error);
+              else if (!_.isEmpty(data)) return callback();
+              else return res.status(404).json({message: 'Utente non trovato!'});
+            });
+        },
+
+        function (callback) {
+          User
+            .update({id: idUser}, {
+              firstname: firstname,
+              lastname: lastname,
+              phone: phone,
+              street_address: street_address,
+              city: city,
+              zipcode: zipcode,
+              country: country
+            })
+            .exec(function (error, data) {
+              if (error) return callback(error);
+              else if (!_.isEmpty(data)) return res.ok({data: data[0]});
+              else return res.status(404).json({message: 'Utente non trovato!'});
+            });
+        }
+
+      ], function () {
+        if (error) return res.serverError({message: error});
+      });
+
 
   }
 
