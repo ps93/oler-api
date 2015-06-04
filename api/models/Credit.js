@@ -418,7 +418,8 @@ module.exports = {
           _.forEach(responses[1], function (item) {
             creditsUsed += item.credit_used;
           });
-          creditsActual -= creditsUsed;
+
+          creditsActual = creditsUsed > creditsActual ? 0 : creditsActual;
         }
 
         return res.ok({
@@ -491,7 +492,8 @@ module.exports = {
           _.forEach(responses[1], function (item) {
             creditsUsed += item.credit_used;
           });
-          creditsActual -= creditsUsed;
+
+          creditsActual = creditsUsed > creditsActual ? 0 : creditsActual;
         }
 
         return res.ok({
