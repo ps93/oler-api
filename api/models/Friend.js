@@ -144,6 +144,9 @@ module.exports = {
   RemoveFakeFriend: function (res, idUser, idFriend) {
     var userFound;
 
+    //****************************************************************//
+    //* 1. CONTROLLA SE L'UTENTE CHE SI VUOLE ELIMINARE E' UN AMICO  *//
+    //****************************************************************//
     async.series([
       function (callback) {
 
@@ -162,6 +165,10 @@ module.exports = {
           });
       },
 
+      //****************************************************************//
+      //* 2. CONTROLLA CHE L'UTENTE CHE SI VUOLE ELIMINARE NON SIA UN  *//
+      //*    AMICO CHE FA GUADAGNARE                                   *//
+      //****************************************************************//
       function (callback) {
         if (!userFound.can_earn_credits) {
           Friend
@@ -174,6 +181,10 @@ module.exports = {
         else return callback();
       },
 
+      //****************************************************************//
+      //* 3. SE E' UN AMICO CHE FA GUADAGNARE ALLORA 'are_friends'     *//
+      //*    VIENE SETTATO A FALSE                                     *//
+      //****************************************************************//
       function (callback) {
         Friend
           .update({id: userFound.id}, {are_friends: false})
@@ -197,7 +208,7 @@ module.exports = {
     async.series([
 
       //****************************************************************//
-      //* 1. CONTROLLA CHE GLI UTENTI       *//
+      //* 1. DALLA RICHIESTA CONTROLLA SE CI SONO UTENTI REGISTRATI    *//
       //****************************************************************//
       function (callback) {
 
@@ -228,6 +239,9 @@ module.exports = {
           });
       },
 
+      //****************************************************************//
+      //* 2. PREPARA LA RICHIESTA PER L'INSERIMENTO DEGLI AMICI        *//
+      //****************************************************************//
       function (callback) {
         Friend
           .find([{or: checkIfUserhasFriend_A}, {or: checkIfUserhasFriend_B}])
@@ -263,6 +277,9 @@ module.exports = {
           });
       },
 
+      //****************************************************************//
+      //* 3. INSERIMENTO DEGLI AMICI    *//
+      //****************************************************************//
       function (callback) {
 
         if (prepareInsert.length > 0) {
