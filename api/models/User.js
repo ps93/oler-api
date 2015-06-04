@@ -299,7 +299,7 @@ module.exports = {
       .findOne({id: idUser})
       .exec(function (error, data) {
         if (error) return res.serverError({message: error});
-        else if (data) return res.ok({data: data});
+        else if (!_.isEmpty(data)) return res.ok({data: data});
         else return res.status(404).json({message: 'L\'utente non è stato trovato'});
       });
   },
