@@ -54,6 +54,8 @@ module.exports.routes = {
   // PROFILO
   'GET /api/v1/user/:id_user': {controller: 'UserController', action: 'myProfile'},
   'PUT /api/v1/user/:id_user': {controller: 'UserController', action: 'editProfile'},
+  'PUT /api/v1/changepassword/:id_user': {controller: 'UserController', action: 'changePassword'},
+  'PUT /api/v1/resetpassword': {controller: 'UserController', action: 'resetPassword'},
 
   // CONDIVISIONE DELL'APP
   'POST /api/v1/shareapp': {controller: 'ShareappController', action: 'insert'},

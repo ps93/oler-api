@@ -51,7 +51,7 @@ module.exports = {
       response.setEncoding('utf8');
       response.on('data', function (chunk) {
         var dataFromApi = JSON.parse(chunk);
-        if(dataFromApi && dataFromApi.registration_confirmed) return callback(null, dataFromApi);
+        if (dataFromApi && dataFromApi.registration_confirmed) return callback(null, dataFromApi);
         return callback(dataFromApi);
       });
     });
@@ -64,7 +64,7 @@ module.exports = {
     request.end();
   },
 
-  CreditsSync: function(usersAmounts, reservationCode, callback){
+  CreditsSync: function (usersAmounts, reservationCode, callback) {
     var requestPrepared = JSON.stringify({
       'channel_code': '0202',
       // ARRAY DI UTENTI CON I RISPETTVI CREDITI
@@ -84,13 +84,11 @@ module.exports = {
       }
     };
 
-    console.log(requestPrepared);
-
     var request = https.request(options, function (response) {
       response.setEncoding('utf8');
       response.on('data', function (chunk) {
         var dataFromApi = JSON.parse(chunk);
-        if(dataFromApi && dataFromApi.credits_confirmed) return callback(null, dataFromApi);
+        if (dataFromApi && dataFromApi.credits_confirmed) return callback(null, dataFromApi);
         return callback(dataFromApi);
       });
     });
@@ -101,6 +99,141 @@ module.exports = {
 
     request.write(requestPrepared);
     request.end();
+  },
+
+  ModifyUserSync: function (userId, firstname, lastname, phone, street_address, city, zipcode, country, callback) {
+    var requestPrepared = JSON.stringify({
+      channel_code: '0202',
+      user_id: userId,
+      first_name: firstname,
+      last_name: lastname,
+      phone_number: _.isEmpty(phone) ? '' : phone,
+      address: {
+        street: _.isEmpty(street_address) ? '' : street_address,
+        city: _.isEmpty(city) ? '' : city,
+        postal_code: _.isEmpty(zipcode) ? '' : zipcode,
+        country: _.isEmpty(country) ? '' : country
+      }
+    });
+
+    var options = {
+      hostname: 'webservice.hotelnet.biz',
+      path: '/ws/Hotelnet.Services/api/user_update_profile',
+      port: 443,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': requestPrepared.length
+      }
+    };
+
+    var request = https.request(options, function (response) {
+      response.setEncoding('utf8');
+
+      response.on('data', function (chunk) {
+        var dataFromApi = JSON.parse(chunk);
+
+        if (response.statusCode === 200 && dataFromApi.operation_confimerd) {
+          return callback(null, dataFromApi);
+        }
+        else return callback(dataFromApi);
+      });
+
+    });
+
+    request.on('error', function (e) {
+      return callback(e);
+    });
+
+    request.write(requestPrepared);
+    request.end();
+  },
+
+  PasswordSync: function (userId, oldPassword, newPassword, callback) {
+    var requestPrepared = JSON.stringify({
+      channel_code: '0202',
+      user_id: userId,
+      old_password: oldPassword,
+      new_password: newPassword
+    });
+
+    var options = {
+      hostname: 'webservice.hotelnet.biz',
+      path: '/ws/Hotelnet.Services/api/user_change_password',
+      port: 443,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': requestPrepared.length
+      }
+    };
+
+    var request = https.request(options, function (response) {
+      response.setEncoding('utf8');
+
+      response.on('data', function (chunk) {
+        var dataFromApi = JSON.parse(chunk);
+
+        if (response.statusCode === 200 && dataFromApi.operation_confimerd) {
+          return callback(null, dataFromApi);
+        }
+        else return callback(dataFromApi);
+      });
+
+    });
+
+    request.on('error', function (e) {
+      return callback(e);
+    });
+
+    request.write(requestPrepared);
+    request.end();
+  },
+
+  ResetPasswordSync: function (email, securityCode, password, callback) {
+    var requestPrepared = JSON.stringify({
+      channel_code: '0202',
+      username: email,
+      security_code: securityCode,
+      only_generate_code: false,
+      new_password: password
+    });
+
+    var options = {
+      hostname: 'webservice.hotelnet.biz',
+      path: '/ws/Hotelnet.Services/api/user_reset_password',
+      port: 443,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': requestPrepared.length
+      }
+    };
+
+    var request = https.request(options, function (response) {
+      response.setEncoding('utf8');
+
+      response.on('data', function (chunk) {
+        var dataFromApi = JSON.parse(chunk);
+
+        if (response.statusCode === 200 && dataFromApi.password_set_correctly) {
+          return callback(null, true);
+        }
+        else if (response.statusCode === 200 && !dataFromApi.password_set_correctly) {
+          return callback(null, false);
+        }
+        else return callback(dataFromApi);
+      });
+
+    });
+
+    request.on('error', function (e) {
+      return callback(e);
+    });
+
+    request.write(requestPrepared);
+    request.end();
+
   },
 
   CalculateCredits: function (total, percentage) {
@@ -135,7 +268,7 @@ module.exports = {
       else {
         if (responses[0].length > 0) {
           _.forEach(responses[0], function (item) {
-            if (item.reservation_date && new Date(item.reservation_date).setHours(0, 0, 0, 0) <= new Date().setHours(0, 0, 0, 0)) {
+            if (item.reservation_date && new Date(item.reservation_date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
               creditsActual += item.credits;
             }
           });

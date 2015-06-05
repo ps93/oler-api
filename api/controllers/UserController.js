@@ -90,6 +90,35 @@ module.exports = {
 
     }
     else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+  },
+
+  changePassword: function (req, res) {
+    var paramsFromUrl = req.params;
+    var params = req.body;
+
+    if (paramsFromUrl.id_user
+      && params.old_password && params.old_password.trim()
+      && params.new_password && params.new_password.trim()) {
+
+      if (params.old_password.trim() !== params.new_password.trim())
+        User.ChangePassword(res, paramsFromUrl.id_user, params.old_password, params.new_password);
+      else return res.status(404).json({'message': 'La nuova password non può essere uguale alla vecchia password'});
+
+    }
+    else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+  },
+
+  resetPassword: function (req, res) {
+    var params = req.body;
+
+    if (params.email
+      && params.password && params.password.trim()
+      && params.security_code && params.security_code.trim()) {
+
+      User.ResetPassword(res, params.email, params.security_code, params.password);
+
+    }
+    else return res.status(404).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   }
 
 };

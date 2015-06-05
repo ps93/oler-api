@@ -350,7 +350,15 @@ module.exports = {
             .findOne({id: idUser})
             .exec(function (error, data) {
               if (error) return callback(error);
-              else if (!_.isEmpty(data)) return callback();
+              else if (!_.isEmpty(data)) {
+
+                HotelnetService.ModifyUserSync(idUser, firstname, lastname, phone, street_address, city, zipcode, country,
+                  function (_error, _data) {
+                    if (_error)  return callback(_error);
+                    else return callback();
+                  });
+
+              }
               else return res.status(404).json({message: 'Utente non trovato!'});
             });
         },
@@ -373,11 +381,86 @@ module.exports = {
             });
         }
 
-      ], function () {
+      ], function (error) {
         if (error) return res.serverError({message: error});
       });
 
 
+  },
+
+  ChangePassword: function (res, idUser, oldPassword, newPassword) {
+
+    async.series([
+      function (callback) {
+        User
+          .findOne({id: idUser, password: MD5(oldPassword)})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else if (!_.isEmpty(data)) {
+              HotelnetService.PasswordSync(idUser, oldPassword, newPassword,
+                function (_error, _data) {
+                  if (_error)  return callback(_error);
+                  else return callback();
+                })
+            }
+            else return res.status(401).json({message: 'La vecchia password non corrisponde'});
+          });
+      },
+      function (callback) {
+
+        User
+          .update({id: idUser}, {
+            password: MD5(newPassword)
+          })
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else if (!_.isEmpty(data)) return res.ok({data: 'La password è stata cambiata con successo'});
+            else return res.status(404).json({message: 'Utente non trovato!'});
+          });
+
+      }
+    ], function (error) {
+      if (error) return res.serverError({message: error});
+    });
+
+
+  },
+
+  ResetPassword: function (res, email, securityCode, password) {
+
+    async.series([
+
+      function (callback) {
+        User
+          .findOne({email: email})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else if (!_.isEmpty(data)) {
+              HotelnetService.ResetPasswordSync(email, securityCode, password,
+                function (_error, _data) {
+                  if (_error) return callback(_error);
+                  else if (!_data) return res.status(400).json({message: 'Il codice inviato non è valido'});
+                  else return callback();
+                });
+            }
+            else return res.status(401).json({message: 'Utente non trovato'});
+          });
+      },
+
+      function (callback) {
+
+        User
+          .update({email: email}, {password: MD5(password)})
+          .exec(function (error, data) {
+            if (error) return callback(error);
+            else if (!_.isEmpty(data)) return res.ok({data: data});
+            else return res.status(404).json({message: 'Utente non trovato!'});
+          });
+
+      }
+    ], function (error) {
+      if (error) return res.serverError({message: error});
+    });
   }
 
 };
