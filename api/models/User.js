@@ -453,7 +453,7 @@ module.exports = {
           .update({email: email}, {password: MD5(password)})
           .exec(function (error, data) {
             if (error) return callback(error);
-            else if (!_.isEmpty(data)) return res.ok({data: data});
+            else if (data.length > 0) return res.ok({data: data[0]});
             else return res.status(404).json({message: 'Utente non trovato!'});
           });
 
