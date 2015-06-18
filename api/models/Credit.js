@@ -118,6 +118,7 @@ module.exports = {
                 id_friend: idUser,
                 id_hotel: idHotel,
                 id_reservation: idReservation,
+                total_reservation: totalReservation,
                 check_in: checkIn,
                 check_out: checkOut,
                 total_paid: totalPaid,

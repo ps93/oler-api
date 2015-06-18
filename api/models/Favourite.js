@@ -81,6 +81,16 @@ module.exports = {
       });
   },
 
+  FavouriteById: function (res, idUser, idHotel) {
+    Favourite
+      .findOne({id_user: idUser, id_hotel: idHotel})
+      .exec(function (error, data) {
+        if (error) return callback(error);
+        else if (!_.isEmpty(data)) return res.ok({data: data});
+        else return res.status(404).json({message: 'L\'hotel selezionato non è presente tra i preferiti'});
+      });
+  },
+
   MyFavourites: function (res, idUser) {
     Favourite
       .find({id_user: idUser})

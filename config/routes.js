@@ -71,6 +71,7 @@ module.exports.routes = {
 
   // HOTEL PREFERITI
   'GET /api/v1/favourites/:id_user': {controller: 'FavouriteController', action: 'myFavourites'},
+  'GET /api/v1/favourites/:id_user/:id_hotel': {controller: 'FavouriteController', action: 'favouriteById'},
   'POST /api/v1/favourites': {controller: 'FavouriteController', action: 'insert'},
   'DELETE /api/v1/favourites/:id_user/:id_hotel': {controller: 'FavouriteController', action: 'remove'},
 

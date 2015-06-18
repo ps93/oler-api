@@ -25,6 +25,15 @@ module.exports = {
     else res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
   },
 
+  favouriteById: function(req, res){
+    var params = req.params;
+
+    if (params.id_user && params.id_hotel)
+      Favourite.FavouriteById(res, params.id_user, params.id_hotel);
+
+    else res.status(400).json({'message': sails.__({phrase: 'bad_request', locale: 'it'})});
+  },
+
   myFavourites: function (req, res) {
     var params = req.params;
 
