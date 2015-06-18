@@ -34,7 +34,11 @@ module.exports = {
       type: 'float',
       required: true
     },
-    reservation_date: {
+    check_in: {
+      type: 'date',
+      required: true
+    },
+    check_out: {
       type: 'date',
       required: true
     },
@@ -76,7 +80,7 @@ module.exports = {
     }
   },
 
-  InsertCredit: function (res, idUser, idHotel, idReservation, totalReservation, totalPaid, creditUsed, reservationDate, currency) {
+  InsertCredit: function (res, idUser, idHotel, idReservation, totalReservation, totalPaid, creditUsed, checkIn, checkOut, currency) {
 
     var prepareParams = [];
     var firstLevelFound = false;
@@ -114,9 +118,9 @@ module.exports = {
                 id_friend: idUser,
                 id_hotel: idHotel,
                 id_reservation: idReservation,
-                total_reservation: totalReservation,
+                check_in: checkIn,
+                check_out: checkOut,
                 total_paid: totalPaid,
-                reservation_date: reservationDate,
                 currency: currency,
                 level: 1,
                 percentage: 2,
@@ -153,7 +157,8 @@ module.exports = {
                   id_reservation: idReservation,
                   total_reservation: totalReservation,
                   total_paid: totalPaid,
-                  reservation_date: reservationDate,
+                  check_in: checkIn,
+                  check_out: checkOut,
                   currency: currency,
                   level: 2,
                   percentage: 1,
@@ -200,7 +205,8 @@ module.exports = {
             id_reservation: idReservation,
             total_reservation: totalReservation,
             total_paid: totalPaid,
-            reservation_date: reservationDate,
+            check_in: checkIn,
+            check_out: checkOut,
             currency: currency,
             level: 0,
             percentage: 2,
@@ -288,7 +294,7 @@ module.exports = {
 
   },
 
-  UpdateCredits: function (res, reservationId, penalityAmount) {
+  UpdateCredits: function (res, reservationId, penalityAmount, creditsFromHotelnet, bookerCreditsRepayment) {
     var prepareRequest = [];
     var prepareData = [];
     var creditsData = [];
@@ -301,9 +307,18 @@ module.exports = {
             .find({id_reservation: reservationId})
             .exec(function (error, data) {
               if (error) return callback(error);
-              else if (data.length > 0) {
+              else if (data.length > 0 && (creditsFromHotelnet.length === data.length)) {
+                var countCreditsFound = 0;
+
                 for (var i = 0; i < data.length; i++) {
                   var updateCredit = HotelnetService.CalculateCredits(penalityAmount, data[i].percentage);
+                  var checkCredits = _.where(creditsFromHotelnet, {
+                    user_level: parseInt(data[i].level),
+                    amount: updateCredit
+                  });
+
+                  if (checkCredits.length > 0) countCreditsFound++;
+
                   prepareRequest.push({id: data[i].id});
                   prepareData.push({
                     credits: updateCredit,
@@ -311,9 +326,10 @@ module.exports = {
                     penalityAmount: penalityAmount
                   });
                 }
-                return callback();
+                if (countCreditsFound === prepareData.length) return callback();
+                else return callback("Si sono verificati degli errori durante l'aggiornamento dei crediti");
               }
-              else return callback(error);
+              else return callback("Si sono verificati degli errori durante l'aggiornamento dei crediti");
             });
         },
         // AGGIORNAMENTO DEL CREDITO RIGA 1
@@ -371,7 +387,7 @@ module.exports = {
           .find({
             id_user: idUser,
             level: {'!': "0"},
-            sort: 'reservation_date'
+            sort: 'check_in'
           })
           .populate('id_friend')
           .populate('id_hotel')
@@ -401,8 +417,8 @@ module.exports = {
         if (responses[0].length > 0) {
           _.forEach(responses[0], function (item) {
             totalCredits += item.credits;
-            if (item.reservation_date
-              && (new Date(item.reservation_date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0))) {
+            if (item.check_out
+              && (new Date(item.check_out).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0))) {
               item.hasCredits = true;
               reservations.push(item);
               creditsActual += item.credits;
@@ -446,7 +462,7 @@ module.exports = {
           .find({
             id_user: idUser,
             level: "0",
-            sort: 'reservation_date'
+            sort: 'check_out'
           })
           .populate('id_hotel')
           .exec(function (error, data) {
@@ -475,8 +491,8 @@ module.exports = {
         if (responses[0].length > 0) {
           _.forEach(responses[0], function (item) {
             totalCredits += item.credits;
-            if (item.reservation_date
-              && (new Date(item.reservation_date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0))) {
+            if (item.check_out
+              && (new Date(item.check_out).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0))) {
               reservations.hasCredits = true;
               reservations.push(item);
               creditsActual += item.credits;
@@ -518,7 +534,7 @@ module.exports = {
         Credit
           .find({
             id_user: idUser,
-            sort: 'reservation_date'
+            sort: 'check_in'
           })
           .exec(function (error, data) {
             if (error) return callback(error);
@@ -546,8 +562,8 @@ module.exports = {
         if (responses[0].length > 0) {
           _.forEach(responses[0], function (item) {
             totalCredits += item.credits;
-            if (item.reservation_date
-              && (new Date(item.reservation_date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0))) {
+            if (item.check_out
+              && (new Date(item.check_out).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0))) {
               reservations.hasCredits = true;
               reservations.push(item);
               creditsActual += item.credits;
