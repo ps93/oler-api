@@ -204,6 +204,7 @@ module.exports = {
     var checkIfUserhasFriend_B = [];
     var tempUsers = [];
     var prepareInsert = [];
+    var usersNotRegistered = contacts;
 
     async.series([
 
@@ -232,10 +233,16 @@ module.exports = {
                   id_user: idUser,
                   id_friend: data[i].id
                 });
+
+                usersNotRegistered = _.remove(usersNotRegistered, function(item){
+                  return item.email !== data[i].email;
+                });
+        
               }
               return callback();
             }
-            else res.status(401).json({message: 'Gli utenti selezionati non sono ancora registrati!'})
+            else return res.ok({usersNotRegistered: usersNotRegistered});
+            
           });
       },
 
@@ -278,7 +285,7 @@ module.exports = {
       },
 
       //****************************************************************//
-      //* 3. INSERIMENTO DEGLI AMICI    *//
+      //* 3. INSERIMENTO DEGLI AMICI                                   *//
       //****************************************************************//
       function (callback) {
 
@@ -287,8 +294,11 @@ module.exports = {
             .create(prepareInsert)
             .exec(function (error, data) {
               if (error) return res.serverError({message: error});
-              else return res.ok({data: data});
+              else return res.ok({data: data, usersNotRegistered: usersNotRegistered});
             });
+        }
+        else if(usersNotRegistered.length > 0) {
+          return res.ok({usersNotRegistered: usersNotRegistered});
         }
         else return res.status(401).json({message: 'Gli utenti che hai selezionato sono già tra i tuoi amici!'})
 
