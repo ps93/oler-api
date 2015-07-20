@@ -139,6 +139,17 @@ module.exports = {
     });
   },
 
+  Remove: function(res, idUser){
+
+    User
+      .destroy({id: idUser})
+      .exec(function(error, data){
+        if (error) res.serverError({'message': error});
+        else res.status(401).json({message: 'Si sono verificati dei problemi durante la registrazione!'});
+      });
+
+  },
+
   LoginWithEmail: function (res, email, password) {
 
     var userFound = {};
@@ -302,6 +313,7 @@ module.exports = {
         else if (!_.isEmpty(data)) return res.ok({data: data});
         else return res.status(404).json({message: 'L\'utente non è stato trovato'});
       });
+ 
   },
 
   Logout: function (res, idUser, token) {
@@ -385,7 +397,6 @@ module.exports = {
         if (error) return res.serverError({message: error});
       });
 
-
   },
 
   ChangePassword: function (res, idUser, oldPassword, newPassword) {
@@ -422,7 +433,6 @@ module.exports = {
     ], function (error) {
       if (error) return res.serverError({message: error});
     });
-
 
   },
 
@@ -461,6 +471,7 @@ module.exports = {
     ], function (error) {
       if (error) return res.serverError({message: error});
     });
+ 
   }
 
 };

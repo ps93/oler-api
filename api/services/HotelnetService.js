@@ -6,7 +6,8 @@ module.exports = {
     // 1 = email | 2 = facebook | 3 = google
     return JSON.stringify({
       'channel_code': '0202',
-      'id_user': params.id,
+      'user_id': params.id,
+      'language': 'it',
       'username': params.email,
       'email': params.email,
       'password': password,
@@ -32,8 +33,8 @@ module.exports = {
   FriendsSync: function (earnerUserId, idUser, callback) {
     var requestPrepared = JSON.stringify({
       'channel_code': '0202',
-      'id_earner_user': earnerUserId,
-      'id_user': idUser
+      'earner_user_id': earnerUserId,
+      'user_id': idUser
     });
 
     var options = {
@@ -51,7 +52,7 @@ module.exports = {
       response.setEncoding('utf8');
       response.on('data', function (chunk) {
         var dataFromApi = JSON.parse(chunk);
-        if (dataFromApi && dataFromApi.registration_confirmed) return callback(null, dataFromApi);
+        if (dataFromApi && dataFromApi.operation_confimerd) return callback(null, dataFromApi);
         return callback(dataFromApi);
       });
     });
@@ -105,6 +106,7 @@ module.exports = {
     var requestPrepared = JSON.stringify({
       channel_code: '0202',
       user_id: userId,
+      language: 'it',
       first_name: firstname,
       last_name: lastname,
       phone_number: _.isEmpty(phone) ? '' : phone,
@@ -152,6 +154,7 @@ module.exports = {
   PasswordSync: function (userId, oldPassword, newPassword, callback) {
     var requestPrepared = JSON.stringify({
       channel_code: '0202',
+      language: 'it',
       user_id: userId,
       old_password: oldPassword,
       new_password: newPassword
@@ -193,6 +196,7 @@ module.exports = {
   ResetPasswordSync: function (email, securityCode, password, callback) {
     var requestPrepared = JSON.stringify({
       channel_code: '0202',
+      language: 'it',
       username: email,
       security_code: securityCode,
       only_generate_code: false,
