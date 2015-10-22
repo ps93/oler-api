@@ -110,7 +110,7 @@ module.exports = {
 
   resetPassword: function (req, res) {
     var params = req.body;
-
+ return res.status(404).json({'message': 'test'});
     if (params.email
       && params.password && params.password.trim()
       && params.security_code && params.security_code.trim()) {
@@ -122,4 +122,3 @@ module.exports = {
   }
 
 };
-
