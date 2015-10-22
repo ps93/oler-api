@@ -20,7 +20,7 @@ module.exports = {
   HotelnetRegistrationOptions: function (requestPrepared) {
     return {
       hostname: 'webservice.hotelnet.biz',
-      path: '/ws/Hotelnet.Services/api/user_new',
+      path: '/ws/Hotelnet.Services.Sandbox/api/user_new',
       port: 443,
       method: 'POST',
       headers: {
@@ -39,7 +39,7 @@ module.exports = {
 
     var options = {
       hostname: 'webservice.hotelnet.biz',
-      path: '/ws/Hotelnet.Services/api/User_Earning_Relation',
+      path: '/ws/Hotelnet.Services.Sandbox/api/User_Earning_Relation',
       port: 443,
       method: 'POST',
       headers: {
@@ -76,7 +76,7 @@ module.exports = {
 
     var options = {
       hostname: 'webservice.hotelnet.biz',
-      path: '/ws/Hotelnet.Services/api/booking_credits',
+      path: '/ws/Hotelnet.Services.Sandbox/api/booking_credits',
       port: 443,
       method: 'POST',
       headers: {
@@ -120,7 +120,7 @@ module.exports = {
 
     var options = {
       hostname: 'webservice.hotelnet.biz',
-      path: '/ws/Hotelnet.Services/api/user_update_profile',
+      path: '/ws/Hotelnet.Services.Sandbox/api/user_update_profile',
       port: 443,
       method: 'POST',
       headers: {
@@ -162,7 +162,7 @@ module.exports = {
 
     var options = {
       hostname: 'webservice.hotelnet.biz',
-      path: '/ws/Hotelnet.Services/api/user_change_password',
+      path: '/ws/Hotelnet.Services.Sandbox/api/user_change_password',
       port: 443,
       method: 'POST',
       headers: {
@@ -205,7 +205,7 @@ module.exports = {
 
     var options = {
       hostname: 'webservice.hotelnet.biz',
-      path: '/ws/Hotelnet.Services/api/user_reset_password',
+      path: '/ws/Hotelnet.Services.Sandbox/api/user_reset_password',
       port: 443,
       method: 'POST',
       headers: {
